@@ -53,12 +53,12 @@
 
 ## Phase 2 — Deploy and local network
 
-- [ ] `scripts/deploy.js` deploys `PHR` and prints the address
-- [ ] Script writes `frontend/src/contract.json` with `{ address, abi }`
-- [ ] `npx hardhat node` runs; deploy to `localhost` succeeds
-- [ ] MetaMask custom network added (RPC `http://127.0.0.1:8545`, chainId `31337`)
-- [ ] Three Hardhat private keys imported into MetaMask
-- [ ] Deployed address recorded in `MEMORY.md`
+- [x] `scripts/deploy.js` deploys `PHR` and prints the address
+- [x] Script writes `frontend/src/contract.json` with `{ address, abi }`
+- [x] `npx hardhat node` runs; deploy to `localhost` succeeds
+- [x] MetaMask custom network added (RPC `http://127.0.0.1:8545`, chainId `31337`)
+- [x] Three Hardhat private keys imported into MetaMask
+- [x] Deployed address recorded in `MEMORY.md`
 
 **Acceptance criteria**
 - `contract.json` regenerates on every deploy
@@ -69,29 +69,29 @@
 ## Phase 3 — Frontend
 
 ### 3.1 Scaffold and wiring
-- [ ] Vite React app in `/frontend`, deps: `ethers`, `react-router-dom`
-- [ ] Design tokens from `DESIGN.md` in a global CSS file
-- [ ] Wallet context: connect, account, chainId, signer, contract
-- [ ] Chain check with a "Switch network" prompt
-- [ ] `accountsChanged` and `chainChanged` listeners
+- [x] Vite React app in `/frontend`, deps: `ethers`, `react-router-dom`
+- [x] Design tokens from `DESIGN.md` in a global CSS file
+- [x] Wallet context: connect, account, chainId, signer, contract
+- [x] Chain check with a "Switch network" prompt
+- [x] `accountsChanged` and `chainChanged` listeners
 
 ### 3.2 Pages and features
-- [ ] **Login/Register** (FR-1): connect → `isRegistered` → register form → `setUserData`
-- [ ] **Patient Dashboard**
-  - [ ] My Health Records (FR-2) with IPFS gateway links
-  - [ ] My Access List (FR-3)
-  - [ ] Grant Access (FR-4)
-  - [ ] Revoke Access (FR-7)
-- [ ] **Doctor Dashboard**
-  - [ ] View Patient Record (FR-5)
-  - [ ] Create Patient Record (FR-6): file → Pinata → CID → `createEHR`
+- [x] **Login/Register** (FR-1): connect → `isRegistered` → register form → `setUserData`
+- [x] **Patient Dashboard**
+  - [x] My Health Records (FR-2) with IPFS gateway links
+  - [x] My Access List (FR-3)
+  - [x] Grant Access (FR-4)
+  - [x] Revoke Access (FR-7)
+- [x] **Doctor Dashboard**
+  - [x] View Patient Record (FR-5)
+  - [x] Create Patient Record (FR-6): file → Pinata → CID → `createEHR`
 
 ### 3.3 Cross-cutting
-- [ ] "Requires gas fee" badge on all writes
-- [ ] Loading, success (tx hash), and error states
-- [ ] Revert reason → friendly message map
-- [ ] Persistent "Demo only" warning banner
-- [ ] Responsive layout (≥360 px)
+- [x] "Requires gas fee" badge on all writes
+- [x] Loading, success (tx hash), and error states
+- [x] Revert reason → friendly message map
+- [x] Persistent "Demo only" warning banner
+- [x] Responsive layout (≥360 px)
 
 **Acceptance criteria**
 - `npm run dev` runs without console errors

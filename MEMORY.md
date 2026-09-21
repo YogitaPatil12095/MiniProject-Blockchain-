@@ -6,9 +6,9 @@
 
 | Field | Value |
 |---|---|
-| Current phase | Phase 1 Complete (Waiting user approval for Phase 2) |
-| Last completed milestone | Phase 1 — Smart Contract and Tests |
-| Next action | Phase 2 — Deploy Script and Local Network |
+| Current phase | Phase 3 Complete (Frontend and Smart Container Layer Ready) |
+| Last completed milestone | Phase 2 (Deploy) & Phase 3 (Frontend & Container Pages) |
+| Next action | Phase 4 (README, E2E demo review, and documentation pass) |
 | Blockers | None |
 | Last updated | 2026-09-21 |
 
@@ -43,8 +43,8 @@
 - Local RPC: `http://127.0.0.1:8545`, chainId `31337`, symbol ETH
 - Sepolia chainId: `11155111`
 - Env files: root `.env` (`SEPOLIA_RPC_URL`, `DEPLOYER_PRIVATE_KEY`); `frontend/.env` (`VITE_PINATA_JWT`, `VITE_CHAIN_ID`)
-- Deployed contract address: `(fill after Phase 2)`
-- Pinata gateway used: `(fill after Phase 3)`
+- Deployed contract address: `0x5FbDB2315678afecb367f032d93F642f64180aa3` (local)
+- Pinata gateway used: `https://gateway.pinata.cloud/ipfs/`
 
 ## 5. Known gotchas (pre-loaded)
 
@@ -75,11 +75,22 @@
 - Issues found and how they were fixed:
   - Peer dependency resolution conflict with `hardhat-gas-reporter` -> resolved by leveraging `@nomicfoundation/hardhat-toolbox` built-in reporter.
 
-### Phase 2 — Deploy script and local network
-_(not started)_
+### Phase 2 — Deploy script and local network — 2026-09-21
+- Done:
+  - Created `scripts/deploy.js` deploying `PHR` and automatically generating `frontend/src/contract.json`.
+  - Tested deployment on local hardhat network (Address: `0x5FbDB2315678afecb367f032d93F642f64180aa3`).
+- Files changed: `scripts/deploy.js`, `frontend/src/contract.json`.
 
-### Phase 3 — Frontend
-_(not started)_
+### Phase 3 — Frontend & Smart Container Pages — 2026-09-21
+- Done:
+  - Scaffolded Vite + React frontend in `/frontend` with `ethers` v6, `react-router-dom`, `lucide-react`.
+  - Implemented `WalletContext.jsx` with account and network tracking, auto-connect, chain switching.
+  - Implemented `usePHR.js` hook exposing all 7 features (FR-1 through FR-7) with error translation.
+  - Implemented `lib/ipfs.js` supporting official Pinata upload (`pinFileToIPFS`).
+  - Built smart container pages: `LoginRegisterPage.jsx`, `PatientDashboardPage.jsx`, `DoctorDashboardPage.jsx`, `PreviewPage.jsx` (`/preview` for Member A).
+  - Built `App.jsx` with persistent demo warning banner and top navigation.
+  - Verified production build (`npm run build` in `frontend` passes with 0 errors).
+- Files changed: `frontend/*`.
 
 ### Phase 4 — README, review, demo
 _(not started)_

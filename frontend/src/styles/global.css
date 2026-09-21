@@ -1,0 +1,250 @@
+@import './tokens.css';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+a {
+  color: var(--primary-600);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Layout Utilities */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-bar {
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--primary-600);
+}
+
+.banner {
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
+  padding: 0.625rem 1.5rem;
+  font-size: 0.875rem;
+  text-align: center;
+  border-bottom: 1px solid #FDE68A;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.main-content {
+  flex: 1;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Base Card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.card-subtitle {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.input, .select {
+  height: 42px;
+  padding: 0 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  background-color: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:focus, .select:focus {
+  border-color: var(--primary-600);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+.input-mono {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 42px;
+  padding: 0 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary-600);
+  color: #FFFFFF;
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-700);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg);
+}
+
+.btn-danger {
+  background-color: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+.btn-danger:hover:not(:disabled) {
+  background-color: var(--danger-bg);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Badges & Chips */
+.gas-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+}
+
+.chip-address {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  background-color: var(--accent-50);
+  color: var(--accent-500);
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.role-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+.role-badge-viewer {
+  background-color: var(--role-viewer-bg);
+  color: var(--role-viewer);
+}
+.role-badge-creator {
+  background-color: var(--role-creator-bg);
+  color: var(--role-creator);
+}
+.role-badge-master {
+  background-color: var(--role-master-bg);
+  color: var(--role-master);
+}
+
+/* Alerts & Toasts */
+.alert {
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+.alert-error {
+  background-color: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid #FECACA;
+}
+.alert-success {
+  background-color: var(--success-bg);
+  color: var(--success);
+  border: 1px solid #BBF7D0;
+}

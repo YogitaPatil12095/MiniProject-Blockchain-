@@ -1,5 +1,12 @@
 # Node modules
 node_modules/
+frontend/node_modules/
+
+# Frontend Build
+frontend/dist/
+dist/
+*.timestamp-*.mjs
+
 
 # Hardhat
 artifacts/

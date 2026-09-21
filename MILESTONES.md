@@ -18,11 +18,11 @@
 
 ## Phase 0 — Setup and prerequisites
 
-- [ ] Node 20/22 LTS, Git, VS Code/Antigravity installed
-- [ ] MetaMask extension installed; three accounts prepared (patient, doctor, spare)
-- [ ] Pinata account created; API JWT saved locally (not committed)
-- [ ] (Optional) Alchemy/Infura Sepolia RPC URL and a throwaway wallet with Sepolia ETH
-- [ ] Empty repo initialised; the six `.md` files copied to the root
+- [x] Node 20/22 LTS, Git, VS Code/Antigravity installed
+- [x] MetaMask extension installed; three accounts prepared (patient, doctor, spare)
+- [x] Pinata account created; API JWT saved locally (not committed)
+- [x] (Optional) Alchemy/Infura Sepolia RPC URL and a throwaway wallet with Sepolia ETH
+- [x] Empty repo initialised; the six `.md` files copied to the root
 
 **Done when:** `node -v` works, MetaMask shows accounts, and the JWT is in a local `.env`.
 
@@ -30,19 +30,19 @@
 
 ## Phase 1 — Smart contract and tests
 
-- [ ] Hardhat 2.x project initialised; sample files removed
-- [ ] `hardhat.config.js`: Solidity 0.8.24, gas reporter on, localhost and sepolia networks
-- [ ] `PHR.sol` with structs, mappings, all functions in `PRD.md`, events, NatSpec
-- [ ] Paper's revert messages preserved verbatim
-- [ ] `PHR.test.js` with `loadFixture` and four signers
+- [x] Hardhat 2.x project initialised; sample files removed
+- [x] `hardhat.config.js`: Solidity 0.8.24, gas reporter on, localhost and sepolia networks
+- [x] `PHR.sol` with structs, mappings, all functions in `PRD.md`, events, NatSpec
+- [x] Paper's revert messages preserved verbatim
+- [x] `PHR.test.js` with `loadFixture` and four signers
 
 **Tests to implement**
-- [ ] Creating New User (4): Patient, Doctor, User1, User2
-- [ ] Granting Access (4 + 1): already-viewer fails, Doctor `m`, User1 `c`, User2 `v`, invalid role fails
-- [ ] Viewing Access List (4)
-- [ ] Viewing EHR (4): patient ✔, doctor ✔, User1 ✘, User2 ✔
-- [ ] Creating EHR (4): patient ✘, doctor ✔, User1 ✔, User2 ✘
-- [ ] Extras (≥3): revoke viewer, revoke creator, duplicate registration reverts
+- [x] Creating New User (4): Patient, Doctor, User1, User2
+- [x] Granting Access (4 + 1): already-viewer fails, Doctor `m`, User1 `c`, User2 `v`, invalid role fails
+- [x] Viewing Access List (4)
+- [x] Viewing EHR (4): patient ✔, doctor ✔, User1 ✘, User2 ✔
+- [x] Creating EHR (4): patient ✘, doctor ✔, User1 ✔, User2 ✘
+- [x] Extras (≥3): revoke viewer, revoke creator, duplicate registration reverts
 
 **Acceptance criteria**
 - `npx hardhat test` all green; output pasted in `MEMORY.md`

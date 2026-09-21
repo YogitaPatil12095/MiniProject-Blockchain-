@@ -6,11 +6,11 @@
 
 | Field | Value |
 |---|---|
-| Current phase | Phase 0 — Not started |
-| Last completed milestone | — |
-| Next action | Produce implementation plan, begin Phase 1 |
+| Current phase | Phase 1 Complete (Waiting user approval for Phase 2) |
+| Last completed milestone | Phase 1 — Smart Contract and Tests |
+| Next action | Phase 2 — Deploy Script and Local Network |
 | Blockers | None |
-| Last updated | (date) |
+| Last updated | 2026-09-21 |
 
 ## 2. Fixed decisions (do not revisit without the user's approval)
 
@@ -58,20 +58,22 @@
 
 ## 6. Phase log
 
-Append one entry per phase using this template.
-
-```
-### Phase N — <name> — <date>
+### Phase 0 & Phase 1 — Setup, Smart Contract and Tests — 2026-09-21
 - Done:
-- Files changed:
-- Commands run and result (paste real output summary):
+  - Initialized branch `build/smart-contract-tests`.
+  - Configured project dependencies (`package.json`, `.gitignore`, `.env.example`, `hardhat.config.js`).
+  - Implemented `PHR.sol` with exact data structures, paper revert strings, and declared enhancements (`block.timestamp`, O(1) mappings, `revokeAccess`, events).
+  - Implemented `PHR.test.js` covering 20 paper-derived tests (5 sections x 4 cases) + 8 extra edge case tests (28 total tests).
+  - Configured gas reporter with Solidity 0.8.24 optimizer (runs: 200).
+- Files changed: `.gitignore`, `.env.example`, `package.json`, `hardhat.config.js`, `contracts/PHR.sol`, `test/PHR.test.js`, `MEMORY.md`.
+- Commands run and result:
+  - `npx hardhat compile` -> Compiled 1 Solidity file successfully.
+  - `npx hardhat test` -> 28 passing (7s), 0 failing.
 - Decisions or deviations:
+  - Preserved paper revert strings verbatim for full test compatibility.
+  - Gas reporter measured lower gas for `createEHR` (143,894 vs 203,904 in paper) due to Solidity 0.8.24 compiler optimizations.
 - Issues found and how they were fixed:
-- Open questions for the user:
-```
-
-### Phase 1 — Contract and tests
-_(not started)_
+  - Peer dependency resolution conflict with `hardhat-gas-reporter` -> resolved by leveraging `@nomicfoundation/hardhat-toolbox` built-in reporter.
 
 ### Phase 2 — Deploy script and local network
 _(not started)_
@@ -92,15 +94,17 @@ _(not started)_
 
 | Section | Cases | Pass |
 |---|---|---|
-| Creating New User | 4 | — |
-| Granting Access | 4 (+1 invalid role) | — |
-| Viewing Access List | 4 | — |
-| Viewing EHR | 4 | — |
-| Creating EHR | 4 | — |
-| Extras (revoke, duplicate) | ≥3 | — |
+| Creating New User | 4 | 4 / 4 |
+| Granting Access | 4 (+1 invalid role) | 5 / 5 |
+| Viewing Access List | 4 | 4 / 4 |
+| Viewing EHR | 4 | 4 / 4 |
+| Creating EHR | 4 | 4 / 4 |
+| Extras (revoke, duplicate, edge cases) | ≥3 | 7 / 7 |
 
 | Method | Min gas | Max gas | Avg gas | Paper avg |
 |---|---|---|---|---|
-| `setUserData` | — | — | — | 206,029 |
-| `grantAccess` | — | — | — | 75,142 |
-| `createEHR` | — | — | — | 203,904 |
+| `setUserData` | 250,740 | 250,776 | 250,758 | 206,029 |
+| `grantAccess` | 79,387 | 146,850 | 102,631 | 75,142 |
+| `createEHR` | 143,750 | 143,930 | 143,894 | 203,904 |
+| `revokeAccess` | 39,537 | 60,953 | 47,446 | N/A |
+

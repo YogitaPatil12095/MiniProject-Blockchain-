@@ -47,26 +47,28 @@ function MainRoutes() {
   const { account } = useWallet();
   const { isRegistered, loading } = usePHR();
 
+  const showDashboard = account && isRegistered === true;
+
   return (
     <main className="main-content" style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 16px" }}>
       <Routes>
         <Route
           path="/"
           element={
-            !account || isRegistered === false ? (
-              <LoginRegisterPage />
-            ) : (
+            showDashboard ? (
               <PatientDashboardPage />
+            ) : (
+              <LoginRegisterPage />
             )
           }
         />
         <Route
           path="/doctor"
           element={
-            !account || isRegistered === false ? (
-              <LoginRegisterPage />
-            ) : (
+            showDashboard ? (
               <DoctorDashboardPage />
+            ) : (
+              <LoginRegisterPage />
             )
           }
         />

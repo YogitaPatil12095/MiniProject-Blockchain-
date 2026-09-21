@@ -45,8 +45,16 @@ export function WalletProvider({ children }) {
     setError(null);
 
     try {
+      // Direct request to trigger MetaMask popup immediately
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error("No accounts found. Please unlock MetaMask.");
+      }
+
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await browserProvider.send("eth_requestAccounts", []);
       const network = await browserProvider.getNetwork();
       const currentSigner = await browserProvider.getSigner();
 
@@ -60,6 +68,8 @@ export function WalletProvider({ children }) {
       console.error("Error connecting wallet:", err);
       if (err.code === 4001) {
         setError("Connection request was rejected in MetaMask.");
+      } else if (err.code === -32002) {
+        setError("MetaMask is waiting for approval! Please click the MetaMask extension icon in your browser toolbar to approve the connection.");
       } else {
         setError(err.message || "Failed to connect wallet.");
       }

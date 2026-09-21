@@ -2,8 +2,18 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useWallet } from "../context/WalletContext";
 import { usePHR } from "../hooks/usePHR";
 import { ethers } from "ethers";
-import { FileText, Users, UserPlus, Trash2, ExternalLink, Fuel, AlertCircle, CheckCircle, RefreshCw } from "lucide-react";
-import { truncateAddress, truncateCID } from "../lib/contract";
+
+// Member A UI Components
+import { RecordCard } from "../components/ui/RecordCard";
+import { EmptyState } from "../components/ui/EmptyState";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Select } from "../components/ui/Select";
+import { GasBadge } from "../components/ui/GasBadge";
+import { AddressChip } from "../components/ui/AddressChip";
+import { RoleBadge } from "../components/ui/RoleBadge";
+import { Modal } from "../components/ui/Modal";
+import { StatusToast } from "../components/ui/StatusToast";
 
 export default function PatientDashboardPage() {
   const { account } = useWallet();
@@ -14,8 +24,7 @@ export default function PatientDashboardPage() {
   const [accessList, setAccessList] = useState({ viewers: [], creators: [] });
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [successMsg, setSuccessMsg] = useState(null);
+  const [txState, setTxState] = useState({ status: "idle", message: "", txHash: "", rawError: "" });
 
   // Grant form state
   const [grantAddress, setGrantAddress] = useState("");
@@ -28,17 +37,19 @@ export default function PatientDashboardPage() {
     if (!account) return;
     try {
       setLoading(true);
-      setError(null);
       const [ehrData, accessData] = await Promise.all([
         fetchEHRRecords(account),
         fetchMyAccessList(),
       ]);
-      // Sort records newest first
       setRecords([...ehrData].sort((a, b) => b.createdAt - a.createdAt));
       setAccessList(accessData);
     } catch (err) {
       console.error("Error loading patient data:", err);
-      setError(err.message || "Failed to load records or access list.");
+      setTxState({
+        status: "error",
+        message: err.message || "Failed to load records or access list.",
+        rawError: err.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -50,23 +61,30 @@ export default function PatientDashboardPage() {
 
   const handleGrantAccess = async (e) => {
     e.preventDefault();
-    setError(null);
-    setSuccessMsg(null);
+    setTxState({ status: "pending", message: "Granting permissions on Ethereum...", txHash: "" });
 
     if (!ethers.isAddress(grantAddress)) {
-      setError("Please enter a valid Ethereum address (0x...)");
+      setTxState({ status: "error", message: "Please enter a valid Ethereum address (0x...)", rawError: "" });
       return;
     }
 
     try {
       setActionLoading(true);
       const res = await grantAccess(grantAddress, grantRole);
-      setSuccessMsg(`Access granted! Tx: ${truncateAddress(res.txHash, 10, 8)}`);
+      setTxState({
+        status: "success",
+        message: `Successfully granted ${grantRole === "v" ? "Viewer" : grantRole === "c" ? "Creator" : "Master"} access!`,
+        txHash: res.txHash,
+      });
       setGrantAddress("");
       await loadData();
       setActiveTab("access");
     } catch (err) {
-      setError(err.message || "Failed to grant access.");
+      setTxState({
+        status: "error",
+        message: err.message || "Failed to grant access.",
+        rawError: err.message,
+      });
     } finally {
       setActionLoading(false);
     }
@@ -74,17 +92,24 @@ export default function PatientDashboardPage() {
 
   const handleRevokeAccess = async () => {
     if (!revokeTarget) return;
-    setError(null);
-    setSuccessMsg(null);
+    setTxState({ status: "pending", message: "Revoking access on Ethereum...", txHash: "" });
 
     try {
       setActionLoading(true);
       const res = await revokeAccess(revokeTarget.address, revokeTarget.role);
-      setSuccessMsg(`Access revoked! Tx: ${truncateAddress(res.txHash, 10, 8)}`);
+      setTxState({
+        status: "success",
+        message: "Successfully revoked access permissions.",
+        txHash: res.txHash,
+      });
       setRevokeTarget(null);
       await loadData();
     } catch (err) {
-      setError(err.message || "Failed to revoke access.");
+      setTxState({
+        status: "error",
+        message: err.message || "Failed to revoke access.",
+        rawError: err.message,
+      });
     } finally {
       setActionLoading(false);
     }
@@ -93,109 +118,88 @@ export default function PatientDashboardPage() {
   const ipfsGatewayBase = import.meta.env.VITE_PINATA_GATEWAY || "https://gateway.pinata.cloud/ipfs/";
 
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {/* Patient Header Banner */}
-      <div className="card" style={{ marginBottom: "1.5rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
+      <div className="card" style={{ padding: "24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
           <div>
-            <h1 className="card-title" style={{ fontSize: "1.5rem" }}>
+            <h2 style={{ fontSize: "var(--fs-h2)", fontWeight: "var(--fw-semibold)", color: "var(--text)" }}>
               Welcome, {userProfile?.fullName || "Patient"}
-            </h1>
-            <p className="card-subtitle" style={{ margin: 0 }}>
-              Address: <span className="chip-address">{truncateAddress(account, 8, 6)}</span>
-            </p>
+            </h2>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
+              <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>My Patient Address:</span>
+              <AddressChip address={account} isSelf={true} />
+            </div>
           </div>
-          <button className="btn btn-secondary" onClick={loadData} disabled={loading} style={{ height: 36, padding: "0 0.875rem" }}>
-            <RefreshCw size={14} className={loading ? "spin" : ""} /> Refresh Data
-          </button>
+          <Button variant="secondary" onClick={loadData} isLoading={loading} loadingText="Refreshing...">
+            🔄 Refresh Records
+          </Button>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem" }}>
-        <button
-          className={`btn ${activeTab === "records" ? "btn-primary" : "btn-secondary"}`}
+      <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--border)", paddingBottom: "8px" }}>
+        <Button
+          variant={activeTab === "records" ? "primary" : "secondary"}
           onClick={() => setActiveTab("records")}
           style={{ height: 38 }}
         >
-          <FileText size={16} /> My Records ({records.length})
-        </button>
-        <button
-          className={`btn ${activeTab === "access" ? "btn-primary" : "btn-secondary"}`}
+          📋 My Records ({records.length})
+        </Button>
+        <Button
+          variant={activeTab === "access" ? "primary" : "secondary"}
           onClick={() => setActiveTab("access")}
           style={{ height: 38 }}
         >
-          <Users size={16} /> Access List ({accessList.viewers.length + accessList.creators.length})
-        </button>
-        <button
-          className={`btn ${activeTab === "grant" ? "btn-primary" : "btn-secondary"}`}
+          👥 Access List ({accessList.viewers.length + accessList.creators.length})
+        </Button>
+        <Button
+          variant={activeTab === "grant" ? "primary" : "secondary"}
           onClick={() => setActiveTab("grant")}
           style={{ height: 38 }}
         >
-          <UserPlus size={16} /> Grant Access
-        </button>
+          ➕ Grant Access
+        </Button>
       </div>
 
-      {error && (
-        <div className="alert alert-error">
-          <AlertCircle size={18} />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {successMsg && (
-        <div className="alert alert-success">
-          <CheckCircle size={18} />
-          <span>{successMsg}</span>
-        </div>
-      )}
+      {/* Global Status Toast */}
+      <StatusToast
+        state={txState.status}
+        message={txState.message}
+        txHash={txState.txHash}
+        rawError={txState.rawError}
+        onDismiss={() => setTxState({ status: "idle", message: "" })}
+      />
 
       {/* TAB 1: My Health Records (FR-2) */}
       {activeTab === "records" && (
         <div>
           {loading ? (
-            <p style={{ color: "var(--text-muted)", padding: "2rem 0", textAlign: "center" }}>Loading health records from Ethereum & IPFS...</p>
+            <p style={{ color: "var(--text-muted)", padding: "32px 0", textAlign: "center" }}>
+              Loading health records from Ethereum & IPFS...
+            </p>
           ) : records.length === 0 ? (
-            <div className="card" style={{ textAlign: "center", padding: "3rem 1.5rem" }}>
-              <FileText size={48} color="var(--text-muted)" style={{ margin: "0 auto 1rem", opacity: 0.5 }} />
-              <h3 style={{ fontSize: "1.125rem", marginBottom: "0.5rem" }}>No medical records found</h3>
-              <p className="card-subtitle" style={{ margin: 0 }}>
-                You have not had any EHR records uploaded yet. Grant a doctor Creator access so they can add your records.
-              </p>
-            </div>
+            <EmptyState
+              title="No Health Records Yet"
+              description="You have no medical records stored on IPFS. Grant a doctor Creator access so they can upload your health records."
+              actionLabel="Grant Access to Doctor"
+              onAction={() => setActiveTab("grant")}
+            />
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {records.map((rec, idx) => {
-                const dateStr = new Date(rec.createdAt * 1000).toLocaleString();
-                const recordUrl = `${ipfsGatewayBase.endsWith("/") ? ipfsGatewayBase : ipfsGatewayBase + "/"}${rec.ipfs_location}`;
-                return (
-                  <div key={idx} className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", margin: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                      <div style={{ width: 44, height: 44, borderRadius: 8, backgroundColor: "var(--primary-50)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <FileText size={24} color="var(--primary-600)" />
-                      </div>
-                      <div>
-                        <h4 style={{ fontSize: "1rem", fontWeight: 600 }}>Record added by {rec.creator_name}</h4>
-                        <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-                          Date: {dateStr} • Creator: <span style={{ fontFamily: "var(--font-mono)" }}>{truncateAddress(rec.creator_address, 6, 4)}</span>
-                        </p>
-                        <p style={{ fontSize: "0.8125rem", color: "var(--accent-500)", fontFamily: "var(--font-mono)" }}>
-                          IPFS CID: {truncateCID(rec.ipfs_location, 10, 8)}
-                        </p>
-                      </div>
-                    </div>
-                    <a
-                      href={recordUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-secondary"
-                      style={{ height: 36, fontSize: "0.875rem" }}
-                    >
-                      Open on IPFS <ExternalLink size={14} />
-                    </a>
-                  </div>
-                );
-              })}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {records.map((rec, idx) => (
+                <RecordCard
+                  key={idx}
+                  record={{
+                    creatorName: rec.creator_name,
+                    creatorAddress: rec.creator_address,
+                    cid: rec.ipfs_location,
+                    createdAt: rec.createdAt,
+                    gatewayUrl: `${ipfsGatewayBase.endsWith("/") ? ipfsGatewayBase : ipfsGatewayBase + "/"}${rec.ipfs_location}`,
+                    fileName: `EHR Record #${records.length - idx}`,
+                  }}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -203,34 +207,37 @@ export default function PatientDashboardPage() {
 
       {/* TAB 2: Access List (FR-3 & FR-7) */}
       {activeTab === "access" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "24px" }}>
           {/* Viewers Column */}
-          <div className="card">
-            <h3 className="card-title" style={{ fontSize: "1.125rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <div className="card" style={{ padding: "24px" }}>
+            <h3 style={{ fontSize: "var(--fs-h3)", fontWeight: "var(--fw-semibold)", color: "var(--text)", marginBottom: "4px" }}>
               Authorized Viewers ({accessList.viewers.length})
             </h3>
-            <p className="card-subtitle">Addresses allowed to read your health records.</p>
+            <p style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", marginBottom: "16px" }}>
+              Addresses permitted to view your encrypted medical records.
+            </p>
+
             {accessList.viewers.length === 0 ? (
-              <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No viewers granted.</p>
+              <p style={{ color: "var(--text-muted)", fontSize: "var(--fs-small)" }}>No viewers granted.</p>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {accessList.viewers.map((viewerAddr, idx) => {
                   const isSelf = viewerAddr.toLowerCase() === account.toLowerCase();
                   return (
-                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.5rem 0", borderBottom: "1px solid var(--border)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <span className="chip-address">{truncateAddress(viewerAddr, 8, 6)}</span>
-                        {isSelf && <span className="role-badge role-badge-viewer">You</span>}
+                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <AddressChip address={viewerAddr} />
+                        {isSelf ? <RoleBadge role="viewer" customLabel="You" /> : <RoleBadge role="viewer" />}
                       </div>
                       {!isSelf && (
-                        <button
-                          className="btn btn-danger"
-                          style={{ height: 32, padding: "0 0.625rem", fontSize: "0.75rem" }}
+                        <Button
+                          variant="danger"
                           onClick={() => setRevokeTarget({ address: viewerAddr, role: "v" })}
                           disabled={actionLoading}
+                          style={{ height: 32, padding: "0 10px", fontSize: "12px" }}
                         >
-                          <Trash2 size={12} /> Revoke
-                        </button>
+                          Revoke
+                        </Button>
                       )}
                     </div>
                   );
@@ -240,30 +247,34 @@ export default function PatientDashboardPage() {
           </div>
 
           {/* Creators Column */}
-          <div className="card">
-            <h3 className="card-title" style={{ fontSize: "1.125rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <div className="card" style={{ padding: "24px" }}>
+            <h3 style={{ fontSize: "var(--fs-h3)", fontWeight: "var(--fw-semibold)", color: "var(--text)", marginBottom: "4px" }}>
               Authorized Creators ({accessList.creators.length})
             </h3>
-            <p className="card-subtitle">Doctors and clinics allowed to add records to your file.</p>
+            <p style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", marginBottom: "16px" }}>
+              Doctors and clinics permitted to upload new EHR files for you.
+            </p>
+
             {accessList.creators.length === 0 ? (
-              <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No creators granted.</p>
+              <p style={{ color: "var(--text-muted)", fontSize: "var(--fs-small)" }}>No creators granted.</p>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {accessList.creators.map((creatorAddr, idx) => {
-                  return (
-                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.5rem 0", borderBottom: "1px solid var(--border)" }}>
-                      <span className="chip-address">{truncateAddress(creatorAddr, 8, 6)}</span>
-                      <button
-                        className="btn btn-danger"
-                        style={{ height: 32, padding: "0 0.625rem", fontSize: "0.75rem" }}
-                        onClick={() => setRevokeTarget({ address: creatorAddr, role: "c" })}
-                        disabled={actionLoading}
-                      >
-                        <Trash2 size={12} /> Revoke
-                      </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {accessList.creators.map((creatorAddr, idx) => (
+                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <AddressChip address={creatorAddr} />
+                      <RoleBadge role="creator" />
                     </div>
-                  );
-                })}
+                    <Button
+                      variant="danger"
+                      onClick={() => setRevokeTarget({ address: creatorAddr, role: "c" })}
+                      disabled={actionLoading}
+                      style={{ height: 32, padding: "0 10px", fontSize: "12px" }}
+                    >
+                      Revoke
+                    </Button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -272,78 +283,76 @@ export default function PatientDashboardPage() {
 
       {/* TAB 3: Grant Access (FR-4) */}
       {activeTab === "grant" && (
-        <div style={{ maxWidth: 540 }}>
-          <div className="card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-              <h3 className="card-title" style={{ margin: 0 }}>Grant Record Access</h3>
-              <div className="gas-badge">
-                <Fuel size={14} /> Requires gas
-              </div>
+        <div style={{ maxWidth: 560 }}>
+          <div className="card" style={{ padding: "32px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+              <h3 style={{ fontSize: "var(--fs-h3)", fontWeight: "var(--fw-semibold)", color: "var(--text)" }}>
+                Grant Record Access
+              </h3>
+              <GasBadge />
             </div>
-            <p className="card-subtitle">
-              Grant a doctor or third party permission to view your records, create new records, or both (Master).
+            <p style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", marginBottom: "24px" }}>
+              Grant an authorized physician or clinic Viewer, Creator, or Master (both) permissions.
             </p>
 
             <form onSubmit={handleGrantAccess}>
-              <div className="form-group">
-                <label className="form-label">Grantee Ethereum Address *</label>
-                <input
-                  className="input input-mono"
-                  type="text"
-                  placeholder="0x..."
-                  value={grantAddress}
-                  onChange={(e) => setGrantAddress(e.target.value)}
-                  required
-                />
-              </div>
+              <Input
+                label="Target Ethereum Address"
+                placeholder="0x..."
+                value={grantAddress}
+                onChange={(e) => setGrantAddress(e.target.value)}
+                isAddress={true}
+                required
+              />
 
-              <div className="form-group">
-                <label className="form-label">Access Level *</label>
-                <select className="select" value={grantRole} onChange={(e) => setGrantRole(e.target.value)}>
-                  <option value="v">Viewer (Can only read your records)</option>
-                  <option value="c">Creator (Can only upload new records for you)</option>
-                  <option value="m">Master (Both Viewer and Creator permissions)</option>
-                </select>
-              </div>
+              <Select
+                label="Access Permission Level"
+                value={grantRole}
+                onChange={(e) => setGrantRole(e.target.value)}
+                options={[
+                  { value: "v", label: "Viewer (Can only read your records)" },
+                  { value: "c", label: "Creator (Can only upload new records for you)" },
+                  { value: "m", label: "Master (Full Viewer + Creator permissions)" },
+                ]}
+              />
 
-              <button
-                type="submit"
-                className="btn btn-primary"
-                style={{ width: "100%", marginTop: "0.75rem" }}
-                disabled={actionLoading}
-              >
-                {actionLoading ? "Signing & Confirming Tx..." : "Confirm Grant in MetaMask"}
-              </button>
+              <div style={{ marginTop: "24px" }}>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isLoading={actionLoading}
+                  loadingText="Confirming Grant..."
+                  style={{ width: "100%", height: 44 }}
+                >
+                  Grant Permissions in MetaMask
+                </Button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Revoke Confirmation Modal */}
-      {revokeTarget && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(15,23,42,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "1rem" }}>
-          <div className="card" style={{ maxWidth: 440, width: "100%", margin: 0, boxShadow: "var(--shadow-modal)" }}>
-            <h3 className="card-title" style={{ color: "var(--danger)" }}>Revoke Access Confirmation</h3>
-            <p style={{ fontSize: "0.9375rem", margin: "1rem 0" }}>
-              Are you sure you want to revoke {revokeTarget.role === "v" ? "Viewer" : revokeTarget.role === "c" ? "Creator" : "Master"} access from:
-            </p>
-            <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.875rem", backgroundColor: "var(--bg)", padding: "0.5rem", borderRadius: "var(--radius-sm)", marginBottom: "1.5rem" }}>
-              {revokeTarget.address}
-            </p>
-            <div className="gas-badge" style={{ marginBottom: "1.25rem" }}>
-              <Fuel size={14} /> Requires gas
-            </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
-              <button className="btn btn-secondary" onClick={() => setRevokeTarget(null)} disabled={actionLoading}>
-                Cancel
-              </button>
-              <button className="btn btn-danger" onClick={handleRevokeAccess} disabled={actionLoading}>
-                {actionLoading ? "Confirming..." : "Confirm Revoke"}
-              </button>
-            </div>
-          </div>
+      {/* Revoke Confirmation Modal (FR-7) */}
+      <Modal
+        isOpen={Boolean(revokeTarget)}
+        onClose={() => setRevokeTarget(null)}
+        onConfirm={handleRevokeAccess}
+        title="Revoke Permission Confirmation"
+        confirmLabel="Revoke Access"
+        variant="danger"
+        isLoading={actionLoading}
+      >
+        <p style={{ fontSize: "var(--fs-body)", color: "var(--text)", marginBottom: "12px" }}>
+          Are you sure you want to revoke {revokeTarget?.role === "v" ? "Viewer" : revokeTarget?.role === "c" ? "Creator" : "Master"} access from:
+        </p>
+        <div style={{ marginBottom: "16px" }}>
+          <AddressChip address={revokeTarget?.address || ""} copyable={false} />
         </div>
-      )}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <GasBadge />
+          <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>This action requires a blockchain gas transaction.</span>
+        </div>
+      </Modal>
     </div>
   );
 }

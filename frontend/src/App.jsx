@@ -1,96 +1,54 @@
-import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { WalletProvider, useWallet } from "./context/WalletContext";
+import { usePHR } from "./hooks/usePHR";
+
+// Member A UI Components
+import { TopBar } from "./components/ui/TopBar";
+import { DemoBanner } from "./components/ui/DemoBanner";
+
+// Smart Container Pages
 import LoginRegisterPage from "./pages/LoginRegisterPage";
 import PatientDashboardPage from "./pages/PatientDashboardPage";
 import DoctorDashboardPage from "./pages/DoctorDashboardPage";
 import PreviewPage from "./pages/PreviewPage";
-import { Shield, Stethoscope, User, AlertTriangle, LogOut, ExternalLink, Network } from "lucide-react";
-import { truncateAddress } from "./lib/contract";
-import { usePHR } from "./hooks/usePHR";
 
-function NavigationHeader() {
-  const { account, chainId, disconnectWallet, targetChainId } = useWallet();
-  const { isRegistered } = usePHR();
+function NavigationWrapper() {
+  const { account, chainId, connectWallet } = useWallet();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const networkName = chainId === 31337 ? "Hardhat Local" : chainId === 11155111 ? "Sepolia Testnet" : `Chain ${chainId || ""}`;
+  const activeRole = location.pathname.startsWith("/doctor") ? "doctor" : "patient";
+  const networkLabel = chainId === 31337 ? "Hardhat Local (31337)" : chainId === 11155111 ? "Sepolia Testnet" : chainId ? `Chain ${chainId}` : "Not Connected";
+
+  const handleRoleSwitch = (role) => {
+    if (role === "doctor") {
+      navigate("/doctor");
+    } else {
+      navigate("/");
+    }
+  };
 
   return (
     <>
-      <header className="top-bar">
-        <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-          <Link to="/" className="brand">
-            <Shield size={22} />
-            <span>PHR Chain</span>
-          </Link>
-
-          {account && isRegistered && (
-            <nav style={{ display: "flex", gap: "0.5rem" }}>
-              <button
-                className={`btn ${location.pathname === "/" ? "btn-primary" : "btn-secondary"}`}
-                style={{ height: 34, padding: "0 0.75rem", fontSize: "0.8125rem" }}
-                onClick={() => navigate("/")}
-              >
-                <User size={14} /> Patient Portal
-              </button>
-              <button
-                className={`btn ${location.pathname === "/doctor" ? "btn-primary" : "btn-secondary"}`}
-                style={{ height: 34, padding: "0 0.75rem", fontSize: "0.8125rem" }}
-                onClick={() => navigate("/doctor")}
-              >
-                <Stethoscope size={14} /> Doctor Portal
-              </button>
-            </nav>
-          )}
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <Link
-            to="/preview"
-            style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginRight: "0.5rem" }}
-          >
-            🎨 Preview Mode
-          </Link>
-
-          {account ? (
-            <>
-              <span className="role-badge" style={{ backgroundColor: "var(--primary-50)", color: "var(--primary-600)", border: "1px solid var(--border)" }}>
-                <Network size={12} style={{ display: "inline", marginRight: 4 }} />
-                {networkName}
-              </span>
-              <span className="chip-address">{truncateAddress(account, 6, 4)}</span>
-              <button
-                className="btn btn-secondary"
-                style={{ height: 34, padding: "0 0.5rem" }}
-                onClick={disconnectWallet}
-                title="Disconnect Wallet"
-              >
-                <LogOut size={14} />
-              </button>
-            </>
-          ) : (
-            <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>Wallet Disconnected</span>
-          )}
-        </div>
-      </header>
-
-      {/* Demo Warning Banner */}
-      <div className="banner">
-        <AlertTriangle size={16} />
-        <span>Demo only: files on IPFS are publicly accessible by CID. Use dummy data, not real medical records.</span>
-      </div>
+      <TopBar
+        networkName={networkLabel}
+        address={account || ""}
+        activeRole={activeRole}
+        onRoleSwitch={handleRoleSwitch}
+        onConnect={connectWallet}
+      />
+      <DemoBanner />
     </>
   );
 }
 
 function MainRoutes() {
   const { account } = useWallet();
-  const { isRegistered } = usePHR();
+  const { isRegistered, loading } = usePHR();
 
   return (
-    <main className="main-content">
+    <main className="main-content" style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 16px" }}>
       <Routes>
         <Route
           path="/"
@@ -122,8 +80,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <WalletProvider>
-        <div className="app-container">
-          <NavigationHeader />
+        <div className="app-container" style={{ minHeight: "100vh", backgroundColor: "var(--bg)" }}>
+          <NavigationWrapper />
           <MainRoutes />
         </div>
       </WalletProvider>

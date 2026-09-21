@@ -1,8 +1,14 @@
 import React, { useState } from "react";
 import { useWallet } from "../context/WalletContext";
 import { usePHR } from "../hooks/usePHR";
-import { Shield, Fuel, AlertCircle, CheckCircle, ArrowRight } from "lucide-react";
-import { truncateAddress } from "../lib/contract";
+
+// Member A UI Components
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Select } from "../components/ui/Select";
+import { GasBadge } from "../components/ui/GasBadge";
+import { AddressChip } from "../components/ui/AddressChip";
+import { StatusToast } from "../components/ui/StatusToast";
 
 export default function LoginRegisterPage({ onLoginSuccess }) {
   const { account, connectWallet, isConnecting, error: walletError, isWrongNetwork, switchNetwork } = useWallet();
@@ -16,188 +22,185 @@ export default function LoginRegisterPage({ onLoginSuccess }) {
     birthday: "",
   });
   const [submitting, setSubmitting] = useState(false);
-  const [txSuccess, setTxSuccess] = useState(null);
-  const [formError, setFormError] = useState(null);
+  const [txState, setTxState] = useState({ status: "idle", message: "", txHash: "", rawError: "" });
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setFormError(null);
-    setTxSuccess(null);
+    setTxState({ status: "pending", message: "Waiting for wallet signature and on-chain confirmation...", txHash: "" });
 
     if (!formData.fullName || !formData.homeAddress || !formData.phone || !formData.birthday) {
-      setFormError("Please fill in all required registration fields.");
+      setTxState({ status: "error", message: "Please fill in all required fields.", rawError: "" });
       return;
     }
 
     try {
       setSubmitting(true);
       const res = await registerUser(formData);
-      setTxSuccess(res.txHash);
+      setTxState({
+        status: "success",
+        message: "Successfully registered on the blockchain!",
+        txHash: res.txHash,
+      });
       if (onLoginSuccess) {
         setTimeout(onLoginSuccess, 1500);
       }
     } catch (err) {
-      setFormError(err.message || "Registration transaction failed.");
+      setTxState({
+        status: "error",
+        message: err.message || "Registration transaction failed.",
+        rawError: err.message,
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
+  // State 1: Disconnected Wallet
   if (!account) {
     return (
-      <div style={{ maxWidth: 480, margin: "4rem auto" }}>
-        <div className="card" style={{ textAlign: "center", padding: "2.5rem 2rem" }}>
-          <div style={{ width: 56, height: 56, borderRadius: "50%", backgroundColor: "var(--primary-50)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.5rem" }}>
-            <Shield size={32} color="var(--primary-600)" />
+      <div style={{ maxWidth: 480, margin: "60px auto" }}>
+        <div className="card" style={{ textAlign: "center", padding: "40px 32px" }}>
+          <div style={{ width: 64, height: 64, borderRadius: "50%", backgroundColor: "var(--primary-50)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+            <img src="/logo.svg" alt="PHR Logo" style={{ width: 36, height: 36 }} />
           </div>
-          <h1 className="card-title" style={{ fontSize: "1.5rem" }}>Your Health Records, Under Your Control</h1>
-          <p className="card-subtitle" style={{ marginBottom: "2rem" }}>
+          <h2 style={{ fontSize: "var(--fs-h2)", fontWeight: "var(--fw-semibold)", color: "var(--text)", marginBottom: "8px" }}>
+            Your Health Records, Under Your Control
+          </h2>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--fs-body)", marginBottom: "32px", lineHeight: "24px" }}>
             Decentralized Personal Health Record (PHR) powered by Ethereum and IPFS. Secure, patient-owned, tamper-evident.
           </p>
 
           {walletError && (
-            <div className="alert alert-error">
-              <AlertCircle size={18} />
-              <span>{walletError}</span>
-            </div>
+            <StatusToast state="error" message={walletError} />
           )}
 
-          <button
-            className="btn btn-primary"
-            style={{ width: "100%", height: 48, fontSize: "1rem" }}
+          <Button
+            variant="primary"
             onClick={connectWallet}
-            disabled={isConnecting}
+            isLoading={isConnecting}
+            loadingText="Connecting to MetaMask..."
+            style={{ width: "100%", height: 46 }}
           >
-            {isConnecting ? "Connecting to MetaMask..." : "Connect MetaMask"}
-            <ArrowRight size={18} />
-          </button>
+            Connect MetaMask
+          </Button>
+
+          <p style={{ marginTop: "16px", fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>
+            Need MetaMask? <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer">Install the extension</a>
+          </p>
         </div>
       </div>
     );
   }
 
+  // State 2: Wrong Network
   if (isWrongNetwork) {
     return (
-      <div style={{ maxWidth: 480, margin: "4rem auto" }}>
-        <div className="card" style={{ textAlign: "center", padding: "2.5rem 2rem" }}>
-          <AlertCircle size={48} color="var(--danger)" style={{ margin: "0 auto 1rem" }} />
-          <h2 className="card-title">Incorrect Blockchain Network</h2>
-          <p className="card-subtitle">
+      <div style={{ maxWidth: 480, margin: "60px auto" }}>
+        <div className="card" style={{ textAlign: "center", padding: "40px 32px" }}>
+          <div style={{ fontSize: "40px", marginBottom: "16px" }}>⚠️</div>
+          <h3 style={{ fontSize: "var(--fs-h3)", fontWeight: "var(--fw-semibold)", color: "var(--danger)", marginBottom: "8px" }}>
+            Wrong Blockchain Network
+          </h3>
+          <p style={{ color: "var(--text-muted)", marginBottom: "24px" }}>
             Please switch MetaMask to the local Hardhat network (Chain ID: 31337) or Sepolia testnet to continue.
           </p>
-          <button className="btn btn-primary" onClick={() => switchNetwork()}>
+          <Button variant="primary" onClick={() => switchNetwork()}>
             Switch Network in MetaMask
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
+  // State 3: Connected but Unregistered (FR-1)
   if (isRegistered === false) {
     return (
-      <div style={{ maxWidth: 540, margin: "2.5rem auto" }}>
-        <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-            <h2 className="card-title" style={{ margin: 0 }}>Register New User Profile</h2>
-            <div className="gas-badge">
-              <Fuel size={14} /> Requires gas
+      <div style={{ maxWidth: 560, margin: "40px auto" }}>
+        <div className="card" style={{ padding: "32px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+            <div>
+              <h2 style={{ fontSize: "var(--fs-h2)", fontWeight: "var(--fw-semibold)", color: "var(--text)" }}>
+                Register New User Profile
+              </h2>
+              <p style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", marginTop: "4px" }}>
+                Connected Account: <AddressChip address={account} isSelf={true} />
+              </p>
             </div>
+            <GasBadge />
           </div>
-          <p className="card-subtitle">
-            Connected Address: <span className="chip-address">{truncateAddress(account, 8, 6)}</span>
-          </p>
-          <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
-            Registration is a one-time blockchain transaction (<code>setUserData</code>) that initializes your identity as a Patient.
+
+          <p style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", margin: "16px 0 24px" }}>
+            Registration is a one-time blockchain transaction (<code>setUserData</code>) that establishes your identity as a Patient on Ethereum.
           </p>
 
-          {(formError || phrError) && (
-            <div className="alert alert-error">
-              <AlertCircle size={18} />
-              <span>{formError || phrError}</span>
-            </div>
-          )}
-
-          {txSuccess && (
-            <div className="alert alert-success">
-              <CheckCircle size={18} />
-              <span>Successfully registered on-chain! Tx: {truncateAddress(txSuccess, 10, 8)}</span>
-            </div>
-          )}
+          <StatusToast
+            state={txState.status}
+            message={txState.message}
+            txHash={txState.txHash}
+            rawError={txState.rawError}
+            onDismiss={() => setTxState({ status: "idle", message: "" })}
+          />
 
           <form onSubmit={handleRegister}>
-            <div className="form-group">
-              <label className="form-label">Full Name *</label>
-              <input
-                className="input"
-                name="fullName"
-                type="text"
-                placeholder="e.g. Alice Smith"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+            <Input
+              label="Full Name"
+              placeholder="e.g. Alice Smith"
+              value={formData.fullName}
+              onChange={(e) => handleInputChange("fullName", e.target.value)}
+              required
+            />
 
-            <div className="form-group">
-              <label className="form-label">Gender</label>
-              <select className="select" name="gender" value={formData.gender} onChange={handleInputChange}>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
+            <Select
+              label="Gender"
+              value={formData.gender}
+              onChange={(e) => handleInputChange("gender", e.target.value)}
+              options={[
+                { value: "Male", label: "Male" },
+                { value: "Female", label: "Female" },
+                { value: "Other", label: "Other" },
+              ]}
+            />
 
-            <div className="form-group">
-              <label className="form-label">Home Address *</label>
-              <input
-                className="input"
-                name="homeAddress"
-                type="text"
-                placeholder="e.g. 123 Maple Street"
-                value={formData.homeAddress}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+            <Input
+              label="Home Address"
+              placeholder="e.g. 123 Maple Street, Cityville"
+              value={formData.homeAddress}
+              onChange={(e) => handleInputChange("homeAddress", e.target.value)}
+              required
+            />
 
-            <div className="form-group">
-              <label className="form-label">Phone Number *</label>
-              <input
-                className="input"
-                name="phone"
-                type="tel"
-                placeholder="e.g. +1234567890"
-                value={formData.phone}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+            <Input
+              label="Phone Number"
+              type="tel"
+              placeholder="e.g. +1234567890"
+              value={formData.phone}
+              onChange={(e) => handleInputChange("phone", e.target.value)}
+              required
+            />
 
-            <div className="form-group">
-              <label className="form-label">Date of Birth *</label>
-              <input
-                className="input"
-                name="birthday"
-                type="date"
-                value={formData.birthday}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+            <Input
+              label="Date of Birth"
+              type="date"
+              value={formData.birthday}
+              onChange={(e) => handleInputChange("birthday", e.target.value)}
+              required
+            />
 
-            <button
-              type="submit"
-              className="btn btn-primary"
-              style={{ width: "100%", marginTop: "1rem" }}
-              disabled={submitting || phrLoading}
-            >
-              {submitting ? "Signing & Confirming Tx..." : "Register on Blockchain"}
-            </button>
+            <div style={{ marginTop: "24px" }}>
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={submitting}
+                loadingText="Signing & Confirming Tx..."
+                style={{ width: "100%", height: 44 }}
+              >
+                Register Profile on Blockchain
+              </Button>
+            </div>
           </form>
         </div>
       </div>
@@ -205,8 +208,8 @@ export default function LoginRegisterPage({ onLoginSuccess }) {
   }
 
   return (
-    <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
-      <p style={{ color: "var(--text-muted)" }}>Loading user state from blockchain...</p>
+    <div style={{ textAlign: "center", padding: "80px 20px" }}>
+      <p style={{ color: "var(--text-muted)", fontSize: "var(--fs-body)" }}>Loading account state from blockchain...</p>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 {
-  "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
   "abi": [
     {
       "anonymous": false,
@@ -438,6 +438,6 @@
     }
   ],
   "chainId": 31337,
-  "networkName": "hardhat",
-  "deployedAt": "2026-09-21T15:53:57.446Z"
+  "networkName": "localhost",
+  "deployedAt": "2026-09-21T16:41:39.579Z"
 }

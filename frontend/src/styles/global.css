@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import './tokens.css';
 
 /* ==========================================
@@ -25,8 +25,9 @@ html, body {
 h1 {
   font-size: var(--fs-h1);
   line-height: var(--lh-h1);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
   color: var(--text);
+  letter-spacing: -0.02em;
 }
 
 h2 {
@@ -34,12 +35,13 @@ h2 {
   line-height: var(--lh-h2);
   font-weight: var(--fw-semibold);
   color: var(--text);
+  letter-spacing: -0.01em;
 }
 
 h3 {
   font-size: var(--fs-h3);
   line-height: var(--lh-h3);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-semibold);
   color: var(--text);
 }
 
@@ -92,40 +94,149 @@ button, input, select, textarea {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--bg);
 }
 
-.main-wrapper {
+.main-content {
   flex: 1;
-  max-width: 1040px;
   width: 100%;
-  margin: 0 auto;
-  padding: var(--space-6) var(--space-4);
 }
 
-.layout-with-sidebar {
+.page-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+/* Healthcare Portal Layout with Sidebar */
+.portal-layout {
   display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: var(--space-6);
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
   align-items: start;
 }
 
-@media (max-width: 900px) {
-  .layout-with-sidebar {
+@media (max-width: 960px) {
+  .portal-layout {
     grid-template-columns: 1fr;
   }
 }
 
+/* Sidebar Styling */
+.portal-sidebar {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 20px 14px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 84px;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.sidebar-nav-item:hover {
+  background-color: var(--primary-50);
+  color: var(--primary-700);
+}
+
+.sidebar-nav-item.active {
+  background-color: var(--primary-600);
+  color: #FFFFFF;
+  font-weight: var(--fw-semibold);
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
+}
+
+/* Healthcare Card System */
 .card {
   background-color: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   padding: var(--space-6);
   box-shadow: var(--shadow-card);
-  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
 }
 
 .card:hover {
   box-shadow: var(--shadow-hover);
+  border-color: rgba(15, 118, 110, 0.3);
+}
+
+/* Metric / Stats Cards */
+.metric-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all var(--transition-fast);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+  border-color: rgba(15, 118, 110, 0.25);
+}
+
+/* Custom Table Styles */
+.medical-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+
+.medical-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.medical-table th {
+  background-color: var(--bg);
+  padding: 12px 16px;
+  font-weight: var(--fw-semibold);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.medical-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text);
+}
+
+.medical-table tr:last-child td {
+  border-bottom: none;
+}
+
+.medical-table tr:hover td {
+  background-color: var(--primary-50);
 }
 
 /* Keyframe Animations */
@@ -135,15 +246,19 @@ button, input, select, textarea {
   }
 }
 
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
 .spinner {
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
   display: inline-block;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -173,3 +288,4 @@ button, input, select, textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
 }
+

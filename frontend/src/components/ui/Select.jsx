@@ -31,13 +31,13 @@ export function Select({
 
   const labelStyle = {
     fontSize: 'var(--fs-small)',
-    fontWeight: 'var(--fw-medium)',
+    fontWeight: 'var(--fw-semibold)',
     color: 'var(--text)',
   };
 
   const selectStyle = {
-    height: '40px',
-    padding: '0 12px',
+    height: '42px',
+    padding: '0 14px',
     borderRadius: 'var(--radius-md)',
     border: `1px solid ${error ? 'var(--danger)' : 'var(--border)'}`,
     backgroundColor: 'var(--surface)',
@@ -45,6 +45,8 @@ export function Select({
     outline: 'none',
     cursor: 'pointer',
     width: '100%',
+    boxShadow: 'var(--shadow-xs)',
+    transition: 'all var(--transition-fast)',
   };
 
   return (

@@ -67,33 +67,35 @@ export default function AIDiagnosisPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* Header Banner */}
       <div
+        className="card"
         style={{
-          background: "linear-gradient(135deg, #4338ca 0%, #0e7490 100%)",
+          background: "linear-gradient(135deg, #4338ca 0%, #0f766e 100%)",
           color: "#fff",
-          borderRadius: 16,
+          borderRadius: "var(--radius-xl)",
           padding: "24px 28px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           flexWrap: "wrap",
           gap: 16,
+          boxShadow: "var(--shadow-card)",
         }}
       >
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <Activity size={26} color="#38bdf8" />
-            <h2 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>
-              Predictive AI/ML Disease Analysis System
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+            <Activity size={28} color="#38bdf8" />
+            <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#fff" }}>
+              Predictive AI/ML Disease Diagnostics System
             </h2>
           </div>
           <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.85)", maxWidth: 720 }}>
-            Automated machine learning inference module for preliminary diagnostic screening. Upload Chest X-Rays to screen for Pneumonia or Brain MRI scans to screen for Tumors with HIPAA-compliant pre-encryption.
+            Automated machine learning inference module for preliminary diagnostic screening. Upload Chest X-Rays for Pneumonia screening or Brain MRI scans for Tumor screening with HIPAA-compliant pre-encryption.
           </p>
         </div>
       </div>
 
       {/* Model Selection Toggle */}
-      <div style={{ display: "flex", gap: 12, backgroundColor: "var(--surface)", padding: 12, borderRadius: 12, border: "1px solid var(--border)" }}>
+      <div style={{ display: "flex", gap: 12, backgroundColor: "var(--surface)", padding: 10, borderRadius: "var(--radius-xl)", border: "1px solid var(--border)", boxShadow: "var(--shadow-xs)" }}>
         <button
           onClick={() => {
             setScanType("pneumonia");
@@ -101,8 +103,8 @@ export default function AIDiagnosisPage() {
           }}
           style={{
             flex: 1,
-            padding: "12px",
-            borderRadius: 8,
+            padding: "14px",
+            borderRadius: "var(--radius-lg)",
             border: "none",
             cursor: "pointer",
             fontWeight: 600,
@@ -111,9 +113,10 @@ export default function AIDiagnosisPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 8,
-            backgroundColor: scanType === "pneumonia" ? "#4f46e5" : "transparent",
+            backgroundColor: scanType === "pneumonia" ? "var(--indigo-600)" : "transparent",
             color: scanType === "pneumonia" ? "#fff" : "var(--text-muted)",
-            transition: "all 0.2s",
+            transition: "all var(--transition-fast)",
+            boxShadow: scanType === "pneumonia" ? "0 4px 12px rgba(79, 70, 229, 0.3)" : "none",
           }}
         >
           <Activity size={18} />
@@ -127,8 +130,8 @@ export default function AIDiagnosisPage() {
           }}
           style={{
             flex: 1,
-            padding: "12px",
-            borderRadius: 8,
+            padding: "14px",
+            borderRadius: "var(--radius-lg)",
             border: "none",
             cursor: "pointer",
             fontWeight: 600,
@@ -137,9 +140,10 @@ export default function AIDiagnosisPage() {
             alignItems: "center",
             justifyContent: "center",
             gap: 8,
-            backgroundColor: scanType === "brain_tumor" ? "#4f46e5" : "transparent",
+            backgroundColor: scanType === "brain_tumor" ? "var(--indigo-600)" : "transparent",
             color: scanType === "brain_tumor" ? "#fff" : "var(--text-muted)",
-            transition: "all 0.2s",
+            transition: "all var(--transition-fast)",
+            boxShadow: scanType === "brain_tumor" ? "0 4px 12px rgba(79, 70, 229, 0.3)" : "none",
           }}
         >
           <Activity size={18} />

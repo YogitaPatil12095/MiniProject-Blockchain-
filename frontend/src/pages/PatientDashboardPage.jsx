@@ -202,101 +202,129 @@ export default function PatientDashboardPage() {
     : "Not Registered";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {/* Patient Header Banner */}
-      <div className="card" style={{ padding: "24px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <div
-              style={{
-                width: "52px",
-                height: "52px",
-                borderRadius: "14px",
-                backgroundColor: "rgba(15, 118, 110, 0.12)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "var(--primary-600)",
-              }}
-            >
-              <User size={28} />
+    <div className="portal-layout">
+      {/* ── Left Sidebar Navigation ── */}
+      <aside className="portal-sidebar">
+        {/* Patient Profile Card Snippet */}
+        <div style={{ padding: "12px", backgroundColor: "var(--primary-50)", borderRadius: "var(--radius-lg)", border: "1px solid rgba(15, 118, 110, 0.15)", display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ width: 38, height: 38, borderRadius: "10px", backgroundColor: "var(--primary-600)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
+              <User size={20} />
             </div>
             <div>
-              <h2 style={{ fontSize: "var(--fs-h2)", fontWeight: "var(--fw-semibold)", color: "var(--text)" }}>
-                Welcome, {userProfile?.fullName || "Patient"}
-              </h2>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px", flexWrap: "wrap" }}>
-                <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>
-                  Aadhaar: <strong style={{ color: "var(--text)" }}>{maskedAadhaar}</strong>
-                </span>
-                <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>•</span>
-                <AddressChip address={account} isSelf={true} />
-              </div>
+              <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text)" }}>{userProfile?.fullName || "Patient"}</div>
+              <span style={{ fontSize: "11px", color: "var(--primary-800)", fontWeight: 600 }}>Aadhaar Verified</span>
             </div>
           </div>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <Button variant="secondary" onClick={() => window.print()} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-              <Printer size={15} />
-              <span>Print Records</span>
-            </Button>
-            <Button variant="secondary" onClick={loadData} isLoading={loading} loadingText="Refreshing...">
-              🔄 Refresh
-            </Button>
+          <div style={{ borderTop: "1px solid rgba(15, 118, 110, 0.15)", paddingTop: "8px", display: "flex", justifyContent: "space-between", fontSize: "11px" }}>
+            <span style={{ color: "var(--text-muted)" }}>Blood Group:</span>
+            <strong style={{ color: "var(--danger)" }}>{patientDemographicsData?.bloodType || "O+"}</strong>
           </div>
         </div>
-      </div>
 
-      {/* Navigation Tabs */}
-      <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--border)", paddingBottom: "8px", flexWrap: "wrap" }}>
-        <Button
-          variant={activeTab === "records" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("records")}
-          style={{ height: 38 }}
-        >
-          <FileText size={16} />
-          <span>My Health Records ({records.length})</span>
-        </Button>
-        <Button
-          variant={activeTab === "demographics" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("demographics")}
-          style={{ height: 38 }}
-        >
-          <User size={16} />
-          <span>Demographics Profile (FR-4)</span>
-        </Button>
-        <Button
-          variant={activeTab === "appointments" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("appointments")}
-          style={{ height: 38 }}
-        >
-          <Calendar size={16} />
-          <span>My Appointments ({appointments.length})</span>
-        </Button>
-        <Button
-          variant={activeTab === "access" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("access")}
-          style={{ height: 38 }}
-        >
-          <Shield size={16} />
-          <span>Access Permissions ({accessList.viewers.length + accessList.creators.length})</span>
-        </Button>
-        <Button
-          variant={activeTab === "grant" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("grant")}
-          style={{ height: 38 }}
-        >
-          ➕ Grant Doctor Access
-        </Button>
-      </div>
+        {/* Sidebar Nav Items */}
+        <nav style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "records" ? "active" : ""}`}
+            onClick={() => setActiveTab("records")}
+          >
+            <FileText size={16} />
+            <span>Health Records ({records.length})</span>
+          </button>
 
-      {/* Global Status Toast */}
-      <StatusToast
-        state={txState.status}
-        message={txState.message}
-        txHash={txState.txHash}
-        rawError={txState.rawError}
-        onDismiss={() => setTxState({ status: "idle", message: "" })}
-      />
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "demographics" ? "active" : ""}`}
+            onClick={() => setActiveTab("demographics")}
+          >
+            <User size={16} />
+            <span>Demographics Profile</span>
+          </button>
+
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "appointments" ? "active" : ""}`}
+            onClick={() => setActiveTab("appointments")}
+          >
+            <Calendar size={16} />
+            <span>Appointments ({appointments.length})</span>
+          </button>
+
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "access" ? "active" : ""}`}
+            onClick={() => setActiveTab("access")}
+          >
+            <Shield size={16} />
+            <span>Access List ({accessList.viewers.length + accessList.creators.length})</span>
+          </button>
+
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "grant" ? "active" : ""}`}
+            onClick={() => setActiveTab("grant")}
+          >
+            <Lock size={16} />
+            <span>Grant Doctor Access</span>
+          </button>
+        </nav>
+      </aside>
+
+      {/* ── Main Content Area ── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        {/* Header Banner */}
+        <div className="card" style={{ padding: "24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div
+                style={{
+                  width: "52px",
+                  height: "52px",
+                  borderRadius: "14px",
+                  backgroundColor: "var(--primary-50)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--primary-600)",
+                  boxShadow: "0 2px 8px rgba(15, 118, 110, 0.15)",
+                }}
+              >
+                <User size={28} />
+              </div>
+              <div>
+                <h2 style={{ fontSize: "var(--fs-h2)", fontWeight: "700", color: "var(--text)" }}>
+                  Patient Health Portal
+                </h2>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>
+                    Aadhaar ID: <strong style={{ color: "var(--text)" }}>{maskedAadhaar}</strong>
+                  </span>
+                  <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>•</span>
+                  <AddressChip address={account} isSelf={true} />
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <Button variant="secondary" onClick={() => window.print()} style={{ height: 38, fontSize: "13px" }}>
+                <Printer size={15} />
+                <span>Print Records</span>
+              </Button>
+              <Button variant="secondary" onClick={loadData} isLoading={loading} loadingText="Refreshing..." style={{ height: 38, fontSize: "13px" }}>
+                🔄 Refresh
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Global Status Toast */}
+        <StatusToast
+          state={txState.status}
+          message={txState.message}
+          txHash={txState.txHash}
+          rawError={txState.rawError}
+          onDismiss={() => setTxState({ status: "idle", message: "" })}
+        />
 
       {/* TAB 1: My Health Records (FR-2) */}
       {activeTab === "records" && (
@@ -785,5 +813,7 @@ export default function PatientDashboardPage() {
         </div>
       </Modal>
     </div>
+  </div>
   );
 }
+

@@ -39,21 +39,22 @@ export function Input({
 
   const labelStyle = {
     fontSize: 'var(--fs-small)',
-    fontWeight: 'var(--fw-medium)',
+    fontWeight: 'var(--fw-semibold)',
     color: 'var(--text)',
   };
 
   const inputStyle = {
-    height: '40px',
-    padding: '0 12px',
+    height: '42px',
+    padding: '0 14px',
     borderRadius: 'var(--radius-md)',
     border: `1px solid ${error || isInvalidAddress ? 'var(--danger)' : 'var(--border)'}`,
     backgroundColor: 'var(--surface)',
     color: 'var(--text)',
     outline: 'none',
-    transition: 'border-color var(--transition-fast), box-shadow var(--transition-fast)',
+    transition: 'all var(--transition-fast)',
     fontFamily: isAddress ? 'var(--font-mono)' : 'var(--font-sans)',
     fontSize: isAddress ? 'var(--fs-mono)' : 'var(--fs-body)',
+    boxShadow: 'var(--shadow-xs)',
   };
 
   return (

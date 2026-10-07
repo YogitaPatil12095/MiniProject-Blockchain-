@@ -146,213 +146,206 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-      {/* Header Banner */}
-      <div
-        style={{
-          background: "linear-gradient(135deg, #0f766e 0%, #1e1b4b 100%)",
-          color: "#fff",
-          borderRadius: 16,
-          padding: "24px 28px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 16,
-        }}
-      >
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <ShieldCheck size={26} color="#38bdf8" />
-            <h2 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>System Administrator Portal</h2>
+    <div className="portal-layout">
+      {/* ── Left Sidebar Navigation ── */}
+      <aside className="portal-sidebar">
+        <div style={{ padding: "14px", backgroundColor: "#FEF3C7", borderRadius: "var(--radius-lg)", border: "1px solid #FDE68A", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ width: 36, height: 36, borderRadius: "10px", backgroundColor: "#D97706", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <ShieldCheck size={20} />
           </div>
-          <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.85)" }}>
-            Supreme Hospital Authority oversight: Manage doctor credentials, register verified Aadhaar patients, audit appointments, and inspect chatbot telemetry.
-          </p>
-        </div>
-        <button
-          onClick={loadAdminData}
-          disabled={loadingData}
-          style={{
-            backgroundColor: "rgba(255,255,255,0.15)",
-            border: "1px solid rgba(255,255,255,0.25)",
-            color: "#fff",
-            borderRadius: 8,
-            padding: "8px 16px",
-            fontSize: 13,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <RefreshCw size={15} className={loadingData ? "spin" : ""} />
-          <span>Refresh Data</span>
-        </button>
-      </div>
-
-      {/* Overview Metrics Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "18px 20px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: 13 }}>
-            <span>Verified Doctors</span>
-            <Stethoscope size={18} color="var(--primary-600)" />
+          <div>
+            <div style={{ fontSize: "13px", fontWeight: 700, color: "#92400E" }}>Hospital Authority</div>
+            <span style={{ fontSize: "11px", color: "#B45309" }}>System Admin</span>
           </div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: "var(--text)", marginTop: 8 }}>
-            {doctorsList.length}
-          </div>
-          <div style={{ fontSize: 11, color: "var(--success)", marginTop: 4 }}>Registered on Ledger</div>
         </div>
 
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "18px 20px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: 13 }}>
-            <span>Aadhaar Patients</span>
-            <Users size={18} color="#6366F1" />
-          </div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: "var(--text)", marginTop: 8 }}>
-            {patientsList.length}
-          </div>
-          <div style={{ fontSize: 11, color: "#6366F1", marginTop: 4 }}>Identity Linked</div>
-        </div>
+        <nav style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "register-doctor" ? "active" : ""}`}
+            onClick={() => setActiveTab("register-doctor")}
+          >
+            <Stethoscope size={16} />
+            <span>Register Doctor</span>
+          </button>
 
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "18px 20px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: 13 }}>
-            <span>Hospital Appointments</span>
-            <Calendar size={18} color="#F59E0B" />
-          </div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: "var(--text)", marginTop: 8 }}>
-            {appointmentsList.length}
-          </div>
-          <div style={{ fontSize: 11, color: "#F59E0B", marginTop: 4 }}>Total System Bookings</div>
-        </div>
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "register-patient" ? "active" : ""}`}
+            onClick={() => setActiveTab("register-patient")}
+          >
+            <UserPlus size={16} />
+            <span>Register Patient (Aadhaar)</span>
+          </button>
 
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "18px 20px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: 13 }}>
-            <span>Chatbot Audit Logs</span>
-            <MessageSquare size={18} color="#06B6D4" />
-          </div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: "var(--text)", marginTop: 8 }}>
-            {chatbotLogsList.length}
-          </div>
-          <div style={{ fontSize: 11, color: "#06B6D4", marginTop: 4 }}>Patient Navigation Logs</div>
-        </div>
-      </div>
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "manage-users" ? "active" : ""}`}
+            onClick={() => setActiveTab("manage-users")}
+          >
+            <Users size={16} />
+            <span>Account Management</span>
+          </button>
 
-      {/* Status Notification */}
-      {actionStatus.state !== "idle" && (
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "appointments" ? "active" : ""}`}
+            onClick={() => setActiveTab("appointments")}
+          >
+            <Calendar size={16} />
+            <span>Master Appointments ({appointmentsList.length})</span>
+          </button>
+
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "chatbot-logs" ? "active" : ""}`}
+            onClick={() => setActiveTab("chatbot-logs")}
+          >
+            <MessageSquare size={16} />
+            <span>Chatbot Logs ({chatbotLogsList.length})</span>
+          </button>
+        </nav>
+      </aside>
+
+      {/* ── Main Content Area ── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        {/* Header Banner */}
         <div
           style={{
-            padding: "14px 18px",
-            borderRadius: 10,
-            fontSize: 14,
+            background: "linear-gradient(135deg, #0f766e 0%, #1e1b4b 100%)",
+            color: "#fff",
+            borderRadius: "var(--radius-xl)",
+            padding: "24px 28px",
             display: "flex",
-            alignItems: "center",
             justifyContent: "space-between",
-            backgroundColor:
-              actionStatus.state === "pending"
-                ? "#FEF3C7"
-                : actionStatus.state === "success"
-                ? "#DCFCE7"
-                : "#FEE2E2",
-            color:
-              actionStatus.state === "pending"
-                ? "#92400E"
-                : actionStatus.state === "success"
-                ? "#166534"
-                : "#991B1B",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "16px",
+            boxShadow: "var(--shadow-card)",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {actionStatus.state === "success" && <CheckCircle size={18} />}
-            {actionStatus.state === "error" && <AlertTriangle size={18} />}
-            <span>{actionStatus.message}</span>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+              <ShieldCheck size={28} color="#38bdf8" />
+              <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#fff" }}>System Administrator Portal</h2>
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.85)" }}>
+              Hospital Authority oversight: Manage doctor credentials, register Aadhaar patients, audit appointments, and inspect chatbot telemetry.
+            </p>
           </div>
-          {actionStatus.txHash && (
-            <span style={{ fontFamily: "monospace", fontSize: 12 }}>
-              Tx: {truncateAddress(actionStatus.txHash, 10, 8)}
-            </span>
-          )}
+          <button
+            onClick={loadAdminData}
+            disabled={loadingData}
+            style={{
+              backgroundColor: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.3)",
+              color: "#fff",
+              borderRadius: "var(--radius-md)",
+              padding: "9px 18px",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              transition: "all 0.15s ease",
+            }}
+          >
+            <RefreshCw size={15} className={loadingData ? "spin" : ""} />
+            <span>Refresh Data</span>
+          </button>
         </div>
-      )}
 
-      {/* Tabs Navigation */}
-      <div style={{ display: "flex", gap: 8, borderBottom: "1px solid var(--border)", paddingBottom: 8, overflowX: "auto" }}>
-        <button
-          onClick={() => setActiveTab("register-doctor")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            fontSize: 13,
-            fontWeight: 600,
-            border: "none",
-            cursor: "pointer",
-            backgroundColor: activeTab === "register-doctor" ? "var(--primary-600)" : "transparent",
-            color: activeTab === "register-doctor" ? "#fff" : "var(--text-muted)",
-          }}
-        >
-          Register Doctor
-        </button>
-        <button
-          onClick={() => setActiveTab("register-patient")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            fontSize: 13,
-            fontWeight: 600,
-            border: "none",
-            cursor: "pointer",
-            backgroundColor: activeTab === "register-patient" ? "var(--primary-600)" : "transparent",
-            color: activeTab === "register-patient" ? "#fff" : "var(--text-muted)",
-          }}
-        >
-          Register Patient (Aadhaar)
-        </button>
-        <button
-          onClick={() => setActiveTab("manage-users")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            fontSize: 13,
-            fontWeight: 600,
-            border: "none",
-            cursor: "pointer",
-            backgroundColor: activeTab === "manage-users" ? "var(--primary-600)" : "transparent",
-            color: activeTab === "manage-users" ? "#fff" : "var(--text-muted)",
-          }}
-        >
-          Account Management
-        </button>
-        <button
-          onClick={() => setActiveTab("appointments")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            fontSize: 13,
-            fontWeight: 600,
-            border: "none",
-            cursor: "pointer",
-            backgroundColor: activeTab === "appointments" ? "var(--primary-600)" : "transparent",
-            color: activeTab === "appointments" ? "#fff" : "var(--text-muted)",
-          }}
-        >
-          Hospital Appointments
-        </button>
-        <button
-          onClick={() => setActiveTab("chatbot-logs")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            fontSize: 13,
-            fontWeight: 600,
-            border: "none",
-            cursor: "pointer",
-            backgroundColor: activeTab === "chatbot-logs" ? "var(--primary-600)" : "transparent",
-            color: activeTab === "chatbot-logs" ? "#fff" : "var(--text-muted)",
-          }}
-        >
-          Chatbot Logs Audit
-        </button>
-      </div>
+        {/* Overview Metrics Cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+          <div className="metric-card">
+            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: 13, fontWeight: 600 }}>
+              <span>Verified Doctors</span>
+              <Stethoscope size={18} color="var(--primary-600)" />
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>
+              {doctorsList.length}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--success)", fontWeight: 600 }}>Registered on Ledger</div>
+          </div>
+
+          <div className="metric-card">
+            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: 13, fontWeight: 600 }}>
+              <span>Aadhaar Patients</span>
+              <Users size={18} color="var(--indigo-600)" />
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>
+              {patientsList.length}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--indigo-600)", fontWeight: 600 }}>Identity Linked</div>
+          </div>
+
+          <div className="metric-card">
+            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: 13, fontWeight: 600 }}>
+              <span>Appointments</span>
+              <Calendar size={18} color="var(--warning)" />
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>
+              {appointmentsList.length}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--warning)", fontWeight: 600 }}>Total Bookings</div>
+          </div>
+
+          <div className="metric-card">
+            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: 13, fontWeight: 600 }}>
+              <span>Chatbot Logs</span>
+              <MessageSquare size={18} color="var(--accent-600)" />
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>
+              {chatbotLogsList.length}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--accent-600)", fontWeight: 600 }}>Interaction Telemetry</div>
+          </div>
+        </div>
+
+        {/* Status Notification */}
+        {actionStatus.state !== "idle" && (
+          <div
+            style={{
+              padding: "14px 18px",
+              borderRadius: "var(--radius-lg)",
+              fontSize: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              backgroundColor:
+                actionStatus.state === "pending"
+                  ? "#FEF3C7"
+                  : actionStatus.state === "success"
+                  ? "#DCFCE7"
+                  : "#FEE2E2",
+              color:
+                actionStatus.state === "pending"
+                  ? "#92400E"
+                  : actionStatus.state === "success"
+                  ? "#166534"
+                  : "#991B1B",
+              border: `1px solid ${
+                actionStatus.state === "pending"
+                  ? "#FDE68A"
+                  : actionStatus.state === "success"
+                  ? "#86EFAC"
+                  : "#FECACA"
+              }`,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {actionStatus.state === "success" && <CheckCircle size={18} />}
+              {actionStatus.state === "error" && <AlertTriangle size={18} />}
+              <span>{actionStatus.message}</span>
+            </div>
+            {actionStatus.txHash && (
+              <span style={{ fontFamily: "monospace", fontSize: 12 }}>
+                Tx: {truncateAddress(actionStatus.txHash, 10, 8)}
+              </span>
+            )}
+          </div>
+        )}
 
       {/* Tab 1: Register Doctor */}
       {activeTab === "register-doctor" && (
@@ -805,5 +798,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
     </div>
+  </div>
   );
 }
+

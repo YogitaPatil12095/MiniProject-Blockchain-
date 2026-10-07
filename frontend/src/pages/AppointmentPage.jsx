@@ -95,24 +95,26 @@ export default function AppointmentPage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-      {/* Header */}
+      {/* Header Banner */}
       <div
+        className="card"
         style={{
           background: "linear-gradient(135deg, #0f766e 0%, #0369a1 100%)",
           color: "#fff",
-          borderRadius: 16,
+          borderRadius: "var(--radius-xl)",
           padding: "24px 28px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           flexWrap: "wrap",
           gap: 16,
+          boxShadow: "var(--shadow-card)",
         }}
       >
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <Calendar size={26} color="#67e8f9" />
-            <h2 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>Appointment Scheduling & Availability Bar (Fig 7)</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+            <Calendar size={28} color="#67e8f9" />
+            <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#fff" }}>Hospital Consultation Scheduling</h2>
           </div>
           <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.85)" }}>
             Select specialist doctors, view available slots, book appointments directly via smart contracts, and track approval status.
@@ -125,7 +127,7 @@ export default function AppointmentPage() {
         <div
           style={{
             padding: "14px 18px",
-            borderRadius: 10,
+            borderRadius: "var(--radius-lg)",
             fontSize: 14,
             display: "flex",
             alignItems: "center",
@@ -142,6 +144,13 @@ export default function AppointmentPage() {
                 : actionStatus.state === "success"
                 ? "#166534"
                 : "#991B1B",
+            border: `1px solid ${
+              actionStatus.state === "pending"
+                ? "#FDE68A"
+                : actionStatus.state === "success"
+                ? "#86EFAC"
+                : "#FECACA"
+            }`,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

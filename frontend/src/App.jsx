@@ -140,7 +140,7 @@ function MainRoutes() {
   const { account } = useWallet();
 
   return (
-    <main className="main-content" style={{ maxWidth: 1120, margin: "0 auto", padding: "24px 16px" }}>
+    <main className="main-content" style={{ maxWidth: 1240, margin: "0 auto", padding: "24px 20px 60px" }}>
       <Routes>
         {/* Root: auto-redirect based on role */}
         <Route path="/" element={<RoleRedirect />} />

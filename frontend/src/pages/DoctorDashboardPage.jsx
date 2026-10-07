@@ -379,76 +379,106 @@ export default function DoctorDashboardPage() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {/* Doctor Header Banner */}
-      <div className="card" style={{ padding: "24px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <div
-              style={{
-                width: "52px",
-                height: "52px",
-                borderRadius: "14px",
-                backgroundColor: "rgba(15, 118, 110, 0.12)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "var(--primary-600)",
-              }}
-            >
-              <Stethoscope size={28} />
+    <div className="portal-layout">
+      {/* ── Left Sidebar Navigation ── */}
+      <aside className="portal-sidebar">
+        {/* Doctor Info Card */}
+        <div style={{ padding: "14px", backgroundColor: "var(--primary-50)", borderRadius: "var(--radius-lg)", border: "1px solid rgba(15, 118, 110, 0.15)", display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ width: 40, height: 40, borderRadius: "10px", backgroundColor: "var(--primary-600)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
+              <Stethoscope size={22} />
             </div>
             <div>
-              <h2 style={{ fontSize: "var(--fs-h2)", fontWeight: "var(--fw-semibold)", color: "var(--text)" }}>
-                {doctorProfileData?.fullName || userProfile?.fullName || "Doctor / Healthcare Provider Portal"}
-              </h2>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px", flexWrap: "wrap" }}>
-                <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>Specialty: <strong>{doctorProfileData?.specialty || "General Medicine"}</strong></span>
-                <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>•</span>
-                <AddressChip address={account} isSelf={true} />
+              <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text)" }}>
+                {doctorProfileData?.fullName || userProfile?.fullName || "Doctor"}
+              </div>
+              <span style={{ fontSize: "11px", color: "var(--primary-800)", fontWeight: 600 }}>
+                {doctorProfileData?.specialty || "General Specialist"}
+              </span>
+            </div>
+          </div>
+          <div style={{ borderTop: "1px solid rgba(15, 118, 110, 0.15)", paddingTop: "8px", fontSize: "11px", color: "var(--text-muted)" }}>
+            Qualifications: <strong style={{ color: "var(--text)" }}>{doctorProfileData?.qualification || "MBBS, MD"}</strong>
+          </div>
+        </div>
+
+        {/* Sidebar Nav Items */}
+        <nav style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "view" ? "active" : ""}`}
+            onClick={() => setActiveTab("view")}
+          >
+            <Stethoscope size={16} />
+            <span>Search & Manage Records</span>
+          </button>
+
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "create" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("create");
+              setUploadStep(1);
+            }}
+          >
+            <FilePlus size={16} />
+            <span>Create EHR & Prescription</span>
+          </button>
+
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "appointments" ? "active" : ""}`}
+            onClick={() => setActiveTab("appointments")}
+          >
+            <Calendar size={16} />
+            <span>Patient Appointments ({appointments.length})</span>
+          </button>
+
+          <button
+            type="button"
+            className={`sidebar-nav-item ${activeTab === "profile" ? "active" : ""}`}
+            onClick={() => setActiveTab("profile")}
+          >
+            <User size={16} />
+            <span>Profile & Location</span>
+          </button>
+        </nav>
+      </aside>
+
+      {/* ── Main Content Area ── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        {/* Doctor Header Banner */}
+        <div className="card" style={{ padding: "24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div
+                style={{
+                  width: "52px",
+                  height: "52px",
+                  borderRadius: "14px",
+                  backgroundColor: "var(--primary-50)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "var(--primary-600)",
+                  boxShadow: "0 2px 8px rgba(15, 118, 110, 0.15)",
+                }}
+              >
+                <Stethoscope size={28} />
+              </div>
+              <div>
+                <h2 style={{ fontSize: "var(--fs-h2)", fontWeight: "700", color: "var(--text)" }}>
+                  {doctorProfileData?.fullName || userProfile?.fullName || "Doctor Portal"}
+                </h2>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>Specialty: <strong>{doctorProfileData?.specialty || "General Medicine"}</strong></span>
+                  <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>•</span>
+                  <AddressChip address={account} isSelf={true} />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--border)", paddingBottom: "8px", flexWrap: "wrap" }}>
-        <Button
-          variant={activeTab === "view" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("view")}
-          style={{ height: 38 }}
-        >
-          🔍 View & Manage Patient Records (FR-5 & FR-7)
-        </Button>
-        <Button
-          variant={activeTab === "create" ? "primary" : "secondary"}
-          onClick={() => {
-            setActiveTab("create");
-            setUploadStep(1);
-          }}
-          style={{ height: 38 }}
-        >
-          <FilePlus size={16} />
-          <span>Upload & Create Detailed EHR (FR-6)</span>
-        </Button>
-        <Button
-          variant={activeTab === "appointments" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("appointments")}
-          style={{ height: 38 }}
-        >
-          <Calendar size={16} />
-          <span>My Patient Appointments (FR-9)</span>
-        </Button>
-        <Button
-          variant={activeTab === "profile" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("profile")}
-          style={{ height: 38 }}
-        >
-          <User size={16} />
-          <span>Doctor Profile Settings (FR-3)</span>
-        </Button>
-      </div>
 
       {/* TAB 1: View Patient Records (FR-5 & FR-7) */}
       {activeTab === "view" && (
@@ -1064,5 +1094,7 @@ export default function DoctorDashboardPage() {
         </div>
       </Modal>
     </div>
+  </div>
   );
 }
+

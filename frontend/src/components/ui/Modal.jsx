@@ -42,8 +42,8 @@ export function Modal({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.5)',
-    backdropFilter: 'blur(4px)',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    backdropFilter: 'var(--glass-backdrop)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -54,10 +54,10 @@ export function Modal({
 
   const modalStyle = {
     backgroundColor: 'var(--surface)',
-    borderRadius: 'var(--radius-lg)',
+    borderRadius: 'var(--radius-xl)',
     boxShadow: 'var(--shadow-modal)',
     width: '100%',
-    maxWidth: '480px',
+    maxWidth: '520px',
     border: '1px solid var(--border)',
     overflow: 'hidden',
   };

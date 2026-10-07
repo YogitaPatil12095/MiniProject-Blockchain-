@@ -28,17 +28,18 @@ export function Button({
     alignItems: 'center',
     justifyContent: 'center',
     gap: '8px',
-    height: '40px',
-    padding: '0 16px',
+    height: '42px',
+    padding: '0 18px',
     borderRadius: 'var(--radius-md)',
-    fontWeight: 'var(--fw-medium)',
+    fontWeight: 'var(--fw-semibold)',
     fontSize: 'var(--fs-body)',
     cursor: disabled || isLoading ? 'not-allowed' : 'pointer',
-    opacity: disabled || isLoading ? 0.6 : 1,
+    opacity: disabled || isLoading ? 0.65 : 1,
     transition: 'all var(--transition-fast)',
     border: '1px solid transparent',
     outline: 'none',
     whiteSpace: 'nowrap',
+    letterSpacing: '-0.01em',
   };
 
   const variantStyles = {
@@ -46,17 +47,19 @@ export function Button({
       backgroundColor: 'var(--primary-600)',
       color: '#FFFFFF',
       borderColor: 'var(--primary-600)',
-      boxShadow: 'var(--shadow-sm)',
+      boxShadow: '0 2px 6px rgba(15, 118, 110, 0.25)',
     },
     secondary: {
       backgroundColor: 'var(--surface)',
       color: 'var(--text)',
       borderColor: 'var(--border)',
+      boxShadow: 'var(--shadow-xs)',
     },
     danger: {
       backgroundColor: 'var(--surface)',
-      color: 'var(--danger)',
-      borderColor: 'var(--danger)',
+      color: 'var(--danger-text)',
+      borderColor: '#FECACA',
+      boxShadow: 'var(--shadow-xs)',
     },
   };
 

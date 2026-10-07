@@ -59,9 +59,15 @@ export function WalletProvider({ children }) {
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
       setProvider(browserProvider);
 
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
+      // wallet_requestPermissions forces MetaMask to show the account
+      // picker every time — so Admin / Doctor / Patient can each pick their account.
+      await window.ethereum.request({
+        method: "wallet_requestPermissions",
+        params: [{ eth_accounts: {} }],
       });
+
+      // After user picks, read the now-active account
+      const accounts = await window.ethereum.request({ method: "eth_accounts" });
 
       if (accounts && accounts.length > 0) {
         await setupSignerAndContract(browserProvider, accounts[0]);

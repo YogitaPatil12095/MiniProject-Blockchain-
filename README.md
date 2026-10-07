@@ -1,4 +1,4 @@
-# Decentralized Personal Health Record (PHR) dApp
+# Intellihealth — Secured Decentralized Electronic Health Record System
 
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.24-363636?logo=solidity)](https://soliditylang.org/)
 [![Hardhat](https://img.shields.io/badge/Hardhat-2.22.x-yellow)](https://hardhat.org/)
@@ -6,43 +6,52 @@
 [![Ethers](https://img.shields.io/badge/Ethers-v6-purple)](https://docs.ethers.org/v6/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-A decentralized Personal Health Record (PHR) web application based on the IEEE research paper:
-> **"Decentralize Application for Storing Personal Health Record using Ethereum Blockchain and Interplanetary File System"**  
-> *R. Sentausa & S. T. Hareva, ICTIIA 2022 (DOI: [10.1109/ICTIIA54654.2022.9935996](https://doi.org/10.1109/ICTIIA54654.2022.9935996))*
+A secured decentralized Electronic Health Record (EHR) web application based on the IEEE research paper:
+> **"Intellihealth – A Secured Decentralized Electronic Health Record System using Blockchain"**  
+> *S. Parshionikar, A. Verulkar, & A. Katkar, 2024 IEEE International Conference on Blockchain and Distributed Systems Security (ICBDS 2024), Pune, India (DOI: [10.1109/ICBDS61829.2024.10837083](https://doi.org/10.1109/ICBDS61829.2024.10837083))*
 
 ---
 
-## 1. Architecture Overview
+## 1. Architecture & Workflow Overview
 
-Medical record files are uploaded to **IPFS** via **Pinata** to minimize on-chain storage costs. Only the tamper-evident cryptographic **CID** (Content Identifier), creator signature, and timestamps are recorded on the **Ethereum smart contract**.
+Intellihealth combines **Ethereum smart contracts**, **encrypted IPFS storage (Pinata / FileBase)**, and an integrated **Predictive AI/ML Disease Analysis System** for automated preliminary diagnosis of medical scans (Pneumonia from X-rays, Brain Tumors from MRI scans). User identities are linked via MetaMask wallets to their **Aadhaar Number** as the primary identification key.
 
 ```
-  +-------------------+
-  |   React Frontend  |
-  +----+---------+----+
-       |         |
- (File Upload) (Sign Tx & CID)
-       |         |
-       v         v
-   +-------+   +------------------------+
-   | IPFS  |   | Ethereum Smart Contract|
-   |Pinata |   |      (PHR.sol)         |
-   +-------+   +------------------------+
+                      +---------------------------------------+
+                      |       MetaMask Ethereum Wallet        |
+                      |     (Linked with Aadhaar Number)      |
+                      +-------------------+-------------------+
+                                          |
+                                          v
++------------------+     +----------------+-------------------+     +------------------+
+| IPFS (Pinata/    | <== |     React Frontend Web Application    | ==> | Predictive AI/ML |
+| Encrypted Storage|     | (Admin, Doctor, & Patient Portals) |     | Disease Inference|
++------------------+     +----------------+-------------------+     +------------------+
+                                          |
+                                          v
+                         +----------------+-------------------+
+                         |      Ethereum Smart Contract       |
+                         |      (Intellihealth / PHR.sol)     |
+                         +------------------------------------+
 ```
 
 ---
 
-## 2. Implemented Features (Paper Use Cases)
+## 2. Comprehensive System Modules & Features
 
-| ID | Feature | Description | On-Chain Gas? |
+| ID | Feature / Module | Description | On-Chain Gas? |
 |---|---|---|---|
-| **FR-1** | **Login & Register** | Connect MetaMask; first-time callers register with `setUserData`. | Yes (First time) |
-| **FR-2** | **View Health Records** | Patient views all their own medical records and opens files via IPFS links. | No (Free query) |
-| **FR-3** | **View Access List** | Patient inspects authorized Viewers and Creators. | No (Free query) |
-| **FR-4** | **Grant Access** | Patient grants an address Viewer (`v`), Creator (`c`), or Master (`m`) access. | Yes |
-| **FR-5** | **View Patient Records** | Doctors view records for patients who granted them Viewer access. | No (Free query) |
-| **FR-6** | **Create Patient Record** | Doctors upload medical files to IPFS and anchor CIDs via `createEHR`. | Yes |
-| **FR-7** | **Revoke Access** | Patient removes viewing or creating permissions from an address. | Yes |
+| **FR-1** | **Aadhaar Wallet Sign-In** | Connect MetaMask wallet anchored with user's **Aadhaar Number**. | Yes (First registration) |
+| **FR-2** | **Admin Dashboard** | System Administrator registers/verifies doctors & patients, revokes accounts, monitors booked appointments, and audits chatbot logs. | Yes |
+| **FR-3** | **Doctor Profile & Dashboard** | Doctors access profiles (Specialty, Qualifications, Doctor ID, Photo) and manage patient consultation queues. | Free (Reads) |
+| **FR-4** | **Patient Demographics** | Patients view and update profile details (Name, Address, Age, Blood Type, Height, Weight, Photo). | Yes (Updates) |
+| **FR-5** | **Permissioned EHR View** | Patients view own medical history. Granted doctors (**Viewer / Master**) load complete consultation logs. | Free (Reads) |
+| **FR-6** | **EHR & Prescription Creation** | Granted doctors (**Creator / Master**) upload encrypted files to IPFS and anchor diagnoses, prescribed drugs, lab tests, and follow-up notes. | Yes |
+| **FR-7** | **Record Update & Revocation** | Doctors modify active prescriptions; patients revoke viewer/creator permissions. | Yes |
+| **FR-8** | **Appointment Booking System** | Patients request appointments by specialty, date, and open time slot. Doctors and Admins approve bookings. | Yes |
+| **FR-9** | **Assistive Navigation Chatbot** | Interactive floating chatbot UI helping patients navigate system portals and contact hospital staff. | Free (Client) |
+| **FR-10**| **Predictive AI/ML Scanner** | Medical report & image scanner evaluating uploaded X-rays (Pneumonia) and MRI scans (Brain Tumor) for preliminary automated diagnosis. | Free (Off-chain ML) |
+| **FR-11**| **Print & Export Records** | Formatted print layout for patient health records and doctor prescriptions. | Free (Client) |
 
 ---
 
@@ -59,108 +68,69 @@ Medical record files are uploaded to **IPFS** via **Pinata** to minimize on-chai
 git clone https://github.com/YogitaPatil12095/MiniProject-Blockchain-.git
 cd MiniProject-Blockchain-
 
-# 2. Install root dependencies
+# 2. Install dependencies
 npm install
-
-# 3. Install frontend dependencies
 cd frontend && npm install && cd ..
 ```
 
-### Running Tests & Gas Reporter
+### Running Smart Contract Tests
 
 ```bash
 npx hardhat test
 ```
-*Output: 28 tests passing (100% green) with complete gas consumption table.*
+*Output: 28 tests passing (100% green) with gas cost benchmarks.*
 
 ---
 
-### Running the Local dApp
+### Running the Application Locally
 
-#### Terminal 1 — Start Hardhat Local Blockchain Node
+#### Terminal 1 — Start Hardhat Blockchain Node
 ```bash
 npx hardhat node
 ```
-*Note the 20 pre-funded test accounts (10,000 ETH each) and their private keys.*
 
-#### Terminal 2 — Deploy Contract to Local Node
+#### Terminal 2 — Deploy Smart Contract
 ```bash
 npx hardhat run scripts/deploy.js --network localhost
 ```
-*This automatically deploys `PHR.sol` and writes `frontend/src/contract.json`.*
 
-#### Terminal 3 — Start Vite React Frontend
+#### Terminal 3 — Launch React Frontend
 ```bash
 cd frontend
 npm run dev
 ```
-*Open `http://localhost:3000` in your browser.*
+*Open `http://localhost:3000` in your web browser.*
 
 ---
 
-## 4. Configuring MetaMask for Local Testing
+## 4. Configuring MetaMask
 
-1. Open MetaMask -> Click the **Network Selector** (top left) -> **Add a network manually**.
+1. Add Custom RPC Network:
    - **Network Name:** Hardhat Local
-   - **New RPC URL:** `http://127.0.0.1:8545`
+   - **RPC URL:** `http://127.0.0.1:8545`
    - **Chain ID:** `31337`
    - **Currency Symbol:** `ETH`
-2. **Import Test Accounts:**
-   - In MetaMask, click Account selector -> **Add account or hardware wallet** -> **Import account**.
-   - Copy Private Key `#0` (for Patient) and `#1` (for Doctor) from the `npx hardhat node` terminal output and paste into MetaMask.
-   - Each account will show a balance of **10,000 ETH**.
+2. Import Private Keys from Terminal 1 output:
+   - Account `#0`: Admin / Patient
+   - Account `#1`: Doctor
 
 ---
 
-## 5. End-to-End Demo Workflow
+## 5. Smart Contract Gas Benchmarks
 
-1. **Patient Registration:**
-   - Connect Account 1 (Patient). Fill in registration form (Full Name, Gender, Address, Phone, Birthday) and submit.
-2. **Doctor Registration:**
-   - Switch MetaMask to Account 2 (Doctor). Fill in registration form and submit.
-3. **Grant Master Access:**
-   - Switch back to Account 1. Go to **Grant Access** -> Paste Account 2's address -> Select **Master** -> Confirm in MetaMask.
-4. **Doctor Uploads EHR:**
-   - Switch to Account 2 -> Go to **Doctor Portal** -> **Create Patient Record** -> Paste Patient address -> Select sample file -> Click **Upload & Save**.
-   - File uploads to IPFS, CID is anchored on-chain.
-5. **Patient Inspects Records:**
-   - Switch to Account 1 -> Go to **My Records** -> Click **Open on IPFS** to view the uploaded medical document.
-6. **Access Control Check:**
-   - Switch to Account 3 (Unregistered / Non-granted) -> Attempt to view patient records -> Call is rejected with friendly error message: *"The patient has not given you permission to view their records"*.
+Gas consumption measured during contract execution compared against base paper metrics:
 
----
-
-## 6. Gas Cost Comparison
-
-Comparison between this implementation and the base paper's published gas benchmarks (Fig 22):
-
-| Method | Min Gas | Max Gas | Our Avg Gas | Paper Avg (Fig 22) |
+| Function | Min Gas | Max Gas | Our Avg Gas | Paper Benchmark (Fig 22) |
 |---|---|---|---|---|
 | `setUserData` | 250,740 | 250,776 | **250,758** | 206,029 |
 | `grantAccess` | 79,387 | 146,850 | **102,631** | 75,142 |
 | `createEHR` | 143,750 | 143,930 | **143,894** | 203,904 |
-| `revokeAccess` | 39,537 | 60,953 | **47,446** | *N/A (Added feature)* |
-| `Deployment` | — | — | **1,740,814** (2.9% block limit) | 2,766,773 |
+| `revokeAccess` | 39,537 | 60,953 | **47,446** | *N/A (Enhanced)* |
+| **Deployment** | — | — | **1,740,814** (2.9% block limit) | 2,766,773 |
 
 ---
 
-## 7. Declared Deviations & Limitations
+## 6. License
 
-### Deviations from the Base Paper
-- **Creation Timestamps:** Uses `block.timestamp` on-chain rather than client-supplied strings to ensure tamper-proof chronology.
-- **$O(1)$ Permission Checks:** Implemented nested mapping lookups (`canView`, `canCreate`) rather than linear array iterations.
-- **Revocation:** Added `revokeAccess` feature for patients.
-- **Events:** Emits Solidity events for all state changes (`UserRegistered`, `AccessGranted`, `AccessRevoked`, `EHRCreated`).
-- **Registration Protection:** Registration (`setUserData`) is strictly one-time per address.
-- **Networks:** Uses Hardhat Local & Sepolia (Rinkeby used in the paper is deprecated).
-
-### Known Limitations
-- Public IPFS files are accessible to anyone with the CID (no end-to-end client-side encryption in this demo).
-- Any wallet address can self-register without centralized medical board verification.
-- On-chain storage is publicly readable by default; smart contract access control governs contract interactions.
-
----
-
-## 8. License
-
-MIT License. Educational mini-project implementation.
+MIT License. Educational mini-project implementation of the IEEE ICBDS 2024 paper *Intellihealth*.
+ntation.

@@ -1,144 +1,93 @@
-# MILESTONES.md — Phased Plan
+# MILESTONES.md — Phased Implementation Plan
 
-> Stop for user approval at the end of each phase. Tick boxes as you go, and mirror status in `MEMORY.md`.
-> Time estimates assume one focused person; adjust to your deadline.
+> Living project roadmap aligned with the Intellihealth IEEE ICBDS 2024 paper.
 
-## Overview
+## Overview & Phase Schedule
 
-| Phase | Name | Est. time | Output |
+| Phase | Module Name | Estimated Time | Primary Output |
 |---|---|---|---|
-| 0 | Setup and prerequisites | 1 h | Accounts and tools ready |
-| 1 | Smart contract and tests | 4–6 h | `PHR.sol`, 23+ passing tests, gas report |
-| 2 | Deploy and local network | 1–2 h | `deploy.js`, `contract.json`, MetaMask configured |
-| 3 | Frontend | 6–10 h | Working UI for all 7 features |
-| 4 | Docs, review, demo | 3–4 h | README, screenshots, report material |
-| 5 | (Optional) Sepolia | 1–2 h | Public testnet deployment |
+| **Phase 0** | Prerequisites & Workspace Setup | 1 h | Dev environment, MetaMask, Pinata API, project config |
+| **Phase 1** | Smart Contract Core & Verification | 4–6 h | `PHR.sol` contract, 28+ Hardhat tests green, gas benchmarks |
+| **Phase 2** | Deploy Script & Local Chain Setup | 1–2 h | `deploy.js`, contract ABI sync (`contract.json`), Hardhat network |
+| **Phase 3** | Core Frontend & Portals Scaffold | 6–8 h | Wallet context, patient & doctor base dashboards, IPFS client upload |
+| **Phase 4** | Admin Portal & Profile Extensions | 4–5 h | Admin workflow dashboard, Aadhaar linking, extended user profile data |
+| **Phase 5** | Appointment Booking & Chatbot | 3–4 h | Appointment scheduling bar, slot reservation, interactive navigation chatbot UI |
+| **Phase 6** | AI/ML Predictive Disease Diagnosis | 4–5 h | Pneumonia & Brain Tumor scan upload, preliminary ML detection inference module |
+| **Phase 7** | Documentation, Review & Demo | 3–4 h | Comprehensive README, test screenshots, gas table, final project verification |
 
 ---
 
-## Phase 0 — Setup and prerequisites
+## Phase 0 — Prerequisites & Workspace Setup
 
-- [x] Node 20/22 LTS, Git, VS Code/Antigravity installed
-- [x] MetaMask extension installed; three accounts prepared (patient, doctor, spare)
-- [x] Pinata account created; API JWT saved locally (not committed)
-- [x] (Optional) Alchemy/Infura Sepolia RPC URL and a throwaway wallet with Sepolia ETH
-- [x] Empty repo initialised; the six `.md` files copied to the root
-
-**Done when:** `node -v` works, MetaMask shows accounts, and the JWT is in a local `.env`.
+- [x] Node 20/22 LTS, Git, VS Code / Antigravity configured
+- [x] MetaMask extension installed with 3 pre-funded local accounts (Admin, Doctor, Patient)
+- [x] Pinata JWT configured in local `.env`
+- [x] Project markdown files (`AGENTS.md`, `PRD.md`, `MILESTONES.md`, `MEMORY.md`, `DESIGN.md`, `REVIEW.md`, `ROLES.md`) synchronized
 
 ---
 
-## Phase 1 — Smart contract and tests
+## Phase 1 — Smart Contract Core & Verification
 
-- [x] Hardhat 2.x project initialised; sample files removed
-- [x] `hardhat.config.js`: Solidity 0.8.24, gas reporter on, localhost and sepolia networks
-- [x] `PHR.sol` with structs, mappings, all functions in `PRD.md`, events, NatSpec
-- [x] Paper's revert messages preserved verbatim
-- [x] `PHR.test.js` with `loadFixture` and four signers
-
-**Tests to implement**
-- [x] Creating New User (4): Patient, Doctor, User1, User2
-- [x] Granting Access (4 + 1): already-viewer fails, Doctor `m`, User1 `c`, User2 `v`, invalid role fails
-- [x] Viewing Access List (4)
-- [x] Viewing EHR (4): patient ✔, doctor ✔, User1 ✘, User2 ✔
-- [x] Creating EHR (4): patient ✘, doctor ✔, User1 ✔, User2 ✘
-- [x] Extras (≥3): revoke viewer, revoke creator, duplicate registration reverts
-
-**Acceptance criteria**
-- `npx hardhat test` all green; output pasted in `MEMORY.md`
-- Gas table (min/max/avg) for `setUserData`, `grantAccess`, `createEHR` recorded
-- `REVIEW.md` sections A (contract) and B (tests) pass
+- [x] Hardhat 2.x setup with `@nomicfoundation/hardhat-toolbox` and Solidity `0.8.24`
+- [x] Implement core `PHR.sol` with `User`, `EHR`, `grantAccess`, `createEHR`, `revokeAccess`, and events
+- [x] Hardhat test suite `test/PHR.test.js` passing 28 tests with gas reporter
+- [ ] Contract extension for Admin role, Aadhaar linkage, Appointments struct, and prescription details (`Medication[]`, `ClinicalTest[]`)
 
 ---
 
-## Phase 2 — Deploy and local network
+## Phase 2 — Deploy Script & Local Chain Setup
 
-- [x] `scripts/deploy.js` deploys `PHR` and prints the address
-- [x] Script writes `frontend/src/contract.json` with `{ address, abi }`
-- [x] `npx hardhat node` runs; deploy to `localhost` succeeds
-- [x] MetaMask custom network added (RPC `http://127.0.0.1:8545`, chainId `31337`)
-- [x] Three Hardhat private keys imported into MetaMask
-- [x] Deployed address recorded in `MEMORY.md`
-
-**Acceptance criteria**
-- `contract.json` regenerates on every deploy
-- MetaMask shows a 10,000 ETH balance on the imported accounts
+- [x] `scripts/deploy.js` deploying contract and exporting `frontend/src/contract.json`
+- [x] Local Hardhat network running (`chainId 31337`)
+- [x] Private keys imported to MetaMask for local testing
 
 ---
 
-## Phase 3 — Frontend
+## Phase 3 — Core Frontend & Portals Scaffold
 
-### 3.1 Scaffold and wiring
-- [x] Vite React app in `/frontend`, deps: `ethers`, `react-router-dom`
-- [x] Design tokens from `DESIGN.md` in a global CSS file
-- [x] Wallet context: connect, account, chainId, signer, contract
-- [x] Chain check with a "Switch network" prompt
-- [x] `accountsChanged` and `chainChanged` listeners
-
-### 3.2 Pages and features
-- [x] **Login/Register** (FR-1): connect → `isRegistered` → register form → `setUserData`
-- [x] **Patient Dashboard**
-  - [x] My Health Records (FR-2) with IPFS gateway links
-  - [x] My Access List (FR-3)
-  - [x] Grant Access (FR-4)
-  - [x] Revoke Access (FR-7)
-- [x] **Doctor Dashboard**
-  - [x] View Patient Record (FR-5)
-  - [x] Create Patient Record (FR-6): file → Pinata → CID → `createEHR`
-
-### 3.3 Cross-cutting
-- [x] "Requires gas fee" badge on all writes
-- [x] Loading, success (tx hash), and error states
-- [x] Revert reason → friendly message map
-- [x] Persistent "Demo only" warning banner
-- [x] Responsive layout (≥360 px)
-
-**Acceptance criteria**
-- `npm run dev` runs without console errors
-- Full manual E2E (below) succeeds
-- `REVIEW.md` sections C (frontend) and D (integration) pass
-
-### E2E demo script (use for screenshots)
-1. Account 1 registers as patient. Account 2 registers as doctor.
-2. Patient grants doctor **Master**.
-3. Doctor tries to create a record → uploads a dummy PDF → confirms in MetaMask.
-4. Patient opens My Health Records → sees the record → opens the IPFS link.
-5. Account 3 (unregistered or not granted) tries to view → sees the blocked error.
-6. Patient revokes the doctor → doctor's next view is blocked.
+- [x] Vite + React app setup in `/frontend` with `ethers` v6 and `react-router-dom`
+- [x] WalletContext with account tracking, network switching prompt, and event handlers
+- [x] Base Patient Dashboard (view records, grant/revoke access) and Doctor Dashboard (create/view EHR)
+- [x] Pinata IPFS file upload integration (`lib/ipfs.js`)
 
 ---
 
-## Phase 4 — Docs, review, demo
+## Phase 4 — Admin Portal & Profile Extensions
 
-- [ ] `README.md`: setup, env vars, MetaMask config, running tests, demo steps, Sepolia steps
-- [ ] README "Deviations from the paper" and "Limitations" sections
-- [ ] Full pass of `REVIEW.md`; results logged
-- [ ] Screenshots: tests passing, gas table, each UI screen, MetaMask confirmations
-- [ ] Comparison table: our gas vs the paper's Fig 22
-- [ ] Final `MEMORY.md` update
-
-**Acceptance criteria**
-- A new person can clone the repo, follow the README, and run the demo
-- No secrets in git history (`git log -p | grep -i jwt` finds nothing)
+- [ ] **Admin Portal (`AdminDashboardPage.jsx`):**
+  - [ ] Add/Register Doctors with specialty, qualifications, location, and Doctor ID
+  - [ ] Add/Register Patients with Aadhaar Number and demographics
+  - [ ] Revoke user accounts & view system audit logs
+- [ ] **Extended Demographic Profiles:**
+  - [ ] Patient profile editor (Age, Phone, Address, Blood Group, Height, Weight, Photo)
+  - [ ] Doctor profile page (Qualifications, Specialty, Contact)
 
 ---
 
-## Phase 5 — (Optional) Sepolia deployment
+## Phase 5 — Appointment Booking & Chatbot
 
-- [ ] `.env` has `SEPOLIA_RPC_URL` and `DEPLOYER_PRIVATE_KEY` (throwaway wallet)
-- [ ] `npx hardhat run scripts/deploy.js --network sepolia`
-- [ ] Frontend `VITE_CHAIN_ID=11155111`; MetaMask on Sepolia
-- [ ] Re-run the E2E demo; record tx hashes and Etherscan links
+- [ ] **Appointment Scheduling System:**
+  - [ ] Appointment booking form for patients (Doctor select, Specialty, Date & Time slot)
+  - [ ] Doctor & Admin appointment approval / status dashboard (`Pending`, `Confirmed`, `Completed`)
+- [ ] **Assistive Navigation Chatbot:**
+  - [ ] Interactive floating messaging modal to assist patients in navigating portals and contacting hospital staff
 
 ---
 
-## Report and presentation outline (suggested)
+## Phase 6 — AI/ML Predictive Disease Diagnosis
 
-1. Problem and motivation
-2. Base paper summary and architecture
-3. Our implementation and tech stack
-4. Smart contract walkthrough
-5. Test plan and results (20+ tests)
-6. Gas cost comparison with the paper
-7. Live demo
-8. Deviations, limitations, and future work
+- [ ] **Predictive AI Analysis Scanner (`AIDiagnosisPage.jsx`):**
+  - [ ] File dropzone for uploading medical reports, X-rays, and MRI scans
+  - [ ] Automated preliminary inference engine for:
+    - [ ] **Pneumonia Detection** from chest X-rays
+    - [ ] **Brain Tumor Detection** from MRI scans
+  - [ ] Confidence score display & preliminary diagnostic summary card
+
+---
+
+## Phase 7 — Documentation, Review & Demo
+
+- [ ] `README.md` update with Intellihealth IEEE 2024 paper details, architecture diagrams, features table, setup instructions, and gas metrics
+- [ ] `REVIEW.md` verification checklist pass
+- [ ] Final `MEMORY.md` update with completed milestones, decisions, and system verification evidence
+

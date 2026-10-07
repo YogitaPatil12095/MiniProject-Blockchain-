@@ -469,4 +469,207 @@ describe("PHR Smart Contract - Sentausa & Hareva (ICTIIA 2022) Test Suite", func
       ).to.be.revertedWith("Already Granted As Master");
     });
   });
+
+  // ==========================================
+  // Section 7: Intellihealth (IEEE ICBDS 2024) Extensions
+  // ==========================================
+  describe("7. Intellihealth (IEEE 2024) Feature Suite", function () {
+    it("Admin can register a verified Doctor with specialty and qualifications", async function () {
+      const { phr, patient: admin, doctor } = await loadFixture(deployPHRFixture);
+
+      await expect(
+        phr.connect(admin).registerDoctor(
+          doctor.address,
+          "DOC-GANACHE-001",
+          "Dr. Priya Sharma",
+          "Pulmonology & Radiology",
+          "MBBS, MD",
+          "+91-9876543210",
+          "Mumbai, Maharashtra",
+          "QmDoctorPhotoCid"
+        )
+      )
+        .to.emit(phr, "DoctorRegistered")
+        .withArgs(doctor.address, "DOC-GANACHE-001", "Dr. Priya Sharma", "Pulmonology & Radiology");
+
+      expect(await phr.isUserRegistered(doctor.address)).to.be.true;
+      const profile = await phr.doctorProfiles(doctor.address);
+      expect(profile.doctorId).to.equal("DOC-GANACHE-001");
+      expect(profile.fullName).to.equal("Dr. Priya Sharma");
+      expect(profile.specialty).to.equal("Pulmonology & Radiology");
+
+      const doctorsList = await phr.getRegisteredDoctors();
+      expect(doctorsList).to.include(doctor.address);
+    });
+
+    it("Admin can register a Patient with linked Aadhaar Number and demographics", async function () {
+      const { phr, patient: admin, user1: patientUser } = await loadFixture(deployPHRFixture);
+
+      const bday = Math.floor(new Date("1998-04-12").getTime() / 1000);
+      await expect(
+        phr.connect(admin).registerPatient(
+          patientUser.address,
+          "5432-8765-1234",
+          "Rahul Verma",
+          "Male",
+          "Bandra West, Mumbai",
+          "+91-9123456780",
+          bday,
+          "B+",
+          175,
+          70,
+          "QmPatientPhotoCid"
+        )
+      )
+        .to.emit(phr, "PatientRegistered")
+        .withArgs(patientUser.address, "5432-8765-1234", "Rahul Verma");
+
+      expect(await phr.isUserRegistered(patientUser.address)).to.be.true;
+      const demo = await phr.patientDemographics(patientUser.address);
+      expect(demo.aadhaarNumber).to.equal("5432-8765-1234");
+      expect(demo.bloodType).to.equal("B+");
+      expect(demo.heightCm).to.equal(175n);
+      expect(demo.weightKg).to.equal(70n);
+
+      expect(await phr.aadhaarToAddress("5432-8765-1234")).to.equal(patientUser.address);
+    });
+
+    it("Non-admin is rejected when attempting admin functions", async function () {
+      const { phr, doctor } = await loadFixture(deployPHRFixture);
+
+      await expect(
+        phr.connect(doctor).registerDoctor(
+          doctor.address,
+          "DOC-002",
+          "Fake Doctor",
+          "General",
+          "MBBS",
+          "123",
+          "Delhi",
+          ""
+        )
+      ).to.be.revertedWith("Admin authorization required");
+    });
+
+    it("Doctor can create detailed EHR with prescriptions, lab tests, and follow-up", async function () {
+      const { phr, patient, doctor } = await loadFixture(fullAccessSetupFixture);
+
+      const medications = JSON.stringify([
+        { brandName: "Amoxicillin", dosage: "500mg", frequency: "TID", durationDays: 7, remarks: "After meals" }
+      ]);
+      const tests = JSON.stringify([
+        { testName: "Chest X-Ray", testCategory: "Radiology", remarks: "Check lower lobe" }
+      ]);
+
+      await expect(
+        phr.connect(doctor).createDetailedEHR(
+          patient.address,
+          "Dr. Bob Smith",
+          "QmEncryptedCID999",
+          "Bacterial Pneumonia (Preliminary)",
+          medications,
+          tests,
+          "Follow up after 1 week with repeat X-Ray"
+        )
+      )
+        .to.emit(phr, "EHRCreated");
+
+      const records = await phr.connect(patient).viewEHR(patient.address);
+      expect(records.length).to.equal(1);
+      expect(records[0].diagnosis).to.equal("Bacterial Pneumonia (Preliminary)");
+      expect(records[0].medicationsJson).to.equal(medications);
+      expect(records[0].testsJson).to.equal(tests);
+      expect(records[0].followUpNotes).to.equal("Follow up after 1 week with repeat X-Ray");
+    });
+
+    it("Doctor can update and delete an existing EHR prescription record", async function () {
+      const { phr, patient, doctor } = await loadFixture(fullAccessSetupFixture);
+
+      await phr.connect(doctor).createDetailedEHR(
+        patient.address,
+        "Dr. Bob Smith",
+        "QmCID1",
+        "Fever",
+        "[]",
+        "[]",
+        "Rest"
+      );
+
+      // Update record
+      await expect(
+        phr.connect(doctor).updateEHR(
+          patient.address,
+          0,
+          "Viral Fever (Resolved)",
+          "[]",
+          "[]",
+          "Complete course"
+        )
+      ).to.emit(phr, "EHRUpdated").withArgs(patient.address, 0, doctor.address);
+
+      let records = await phr.connect(patient).viewEHR(patient.address);
+      expect(records[0].diagnosis).to.equal("Viral Fever (Resolved)");
+
+      // Delete record
+      await expect(
+        phr.connect(doctor).deleteEHR(patient.address, 0)
+      ).to.emit(phr, "EHRDeleted").withArgs(patient.address, 0, doctor.address);
+
+      records = await phr.connect(patient).viewEHR(patient.address);
+      expect(records.length).to.equal(0);
+    });
+
+    it("Patient can book appointment with Doctor and Doctor can approve it", async function () {
+      const { phr, patient, doctor } = await loadFixture(fullAccessSetupFixture);
+
+      const apptTimestamp = Math.floor(Date.now() / 1000) + 86400; // tomorrow
+      await expect(
+        phr.connect(patient).bookAppointment(
+          doctor.address,
+          "Neurology & MRI Consultation",
+          apptTimestamp,
+          "10:00 AM - 10:30 AM"
+        )
+      )
+        .to.emit(phr, "AppointmentBooked")
+        .withArgs(1, patient.address, doctor.address, "Neurology & MRI Consultation", "10:00 AM - 10:30 AM");
+
+      const patientAppts = await phr.connect(patient).getPatientAppointments(patient.address);
+      expect(patientAppts.length).to.equal(1);
+      expect(patientAppts[0].status).to.equal("Pending");
+
+      // Doctor confirms appointment
+      await expect(
+        phr.connect(doctor).updateAppointmentStatus(1, "Confirmed")
+      )
+        .to.emit(phr, "AppointmentStatusUpdated")
+        .withArgs(1, "Confirmed");
+
+      const doctorAppts = await phr.connect(doctor).getDoctorAppointments(doctor.address);
+      expect(doctorAppts[0].status).to.equal("Confirmed");
+    });
+
+    it("Chatbot interactions can be logged and viewed by Admin", async function () {
+      const { phr, patient: admin, user1: patientUser } = await loadFixture(registeredUsersFixture);
+
+      await expect(
+        phr.connect(patientUser).logChatbotInteraction(
+          "How do I upload my MRI scan for brain tumor analysis?",
+          "Navigation & AI Diagnosis"
+        )
+      )
+        .to.emit(phr, "ChatbotInteractionLogged")
+        .withArgs(
+          patientUser.address,
+          "How do I upload my MRI scan for brain tumor analysis?",
+          "Navigation & AI Diagnosis",
+          await ethers.provider.getBlock("latest").then((b) => b.timestamp + 1)
+        );
+
+      const logs = await phr.connect(admin).getChatbotLogs();
+      expect(logs.length).to.equal(1);
+      expect(logs[0].query).to.equal("How do I upload my MRI scan for brain tumor analysis?");
+      expect(logs[0].userAddress).to.equal(patientUser.address);
+    });
+  });
 });

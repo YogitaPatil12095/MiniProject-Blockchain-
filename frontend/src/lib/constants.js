@@ -22,18 +22,48 @@ export const NETWORKS = {
   },
 };
 
+export const MEDICAL_SPECIALTIES = [
+  "Pulmonology & Respiratory Medicine",
+  "Neurology & Neurosurgery",
+  "Cardiology & Vascular Medicine",
+  "Radiology & Diagnostic Imaging",
+  "General Internal Medicine",
+  "Oncology & Hematology",
+  "Orthopedics & Sports Medicine",
+  "Pediatrics & Child Health",
+];
+
+export const TIME_SLOTS = [
+  "09:00 AM - 09:30 AM",
+  "09:30 AM - 10:00 AM",
+  "10:00 AM - 10:30 AM",
+  "10:30 AM - 11:00 AM",
+  "11:30 AM - 12:00 PM",
+  "02:00 PM - 02:30 PM",
+  "03:00 PM - 03:30 PM",
+  "04:00 PM - 04:30 PM",
+  "05:00 PM - 05:30 PM",
+];
+
 export const ERROR_MESSAGES = {
   "Already registered": "You are already registered.",
-  "Access Role Not Valid": "Choose Viewer, Creator, or Master.",
+  "Admin authorization required": "Admin authorization required for this action.",
+  "Doctor already registered": "This doctor address is already registered.",
+  "Patient already registered": "This patient address is already registered.",
+  "Aadhaar required": "A valid Aadhaar number is required.",
+  "Aadhaar already linked": "This Aadhaar number is already linked to another wallet.",
+  "Access Role Not Valid": "Choose Viewer (v), Creator (c), or Master (m).",
   "User not found": "That address has not registered yet.",
   "Already Granted As Viewer": "This address already has Viewer access.",
   "Already Granted As Creator": "This address already has Creator access.",
   "Already Granted As Master": "This address already has Master access.",
   "Address not registered": "The target address is not registered.",
   "You are not granted as viewer": "The patient has not given you permission to view their records.",
-  "You are not granted as a creator": "The patient has not given you permission to add records.",
+  "You are not granted as a creator": "The patient has not given you permission to add/modify records.",
   "Not granted": "Nothing to revoke for this address.",
   "Cannot revoke own access": "Patients cannot revoke their own viewer access.",
+  "Cannot revoke admin": "System administrator account cannot be revoked.",
+  "Unauthorized to update appointment": "You are not authorized to update this appointment status.",
   "ACTION_REJECTED": "You cancelled the transaction in MetaMask.",
   "4001": "You cancelled the transaction in MetaMask.",
 };
@@ -64,3 +94,4 @@ export function mapContractError(error) {
 
   return error.reason || error.shortMessage || error.message || "Transaction failed.";
 }
+

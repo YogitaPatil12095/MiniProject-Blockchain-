@@ -2,9 +2,22 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useWallet } from "../context/WalletContext";
 import { usePHR } from "../hooks/usePHR";
 import { ethers } from "ethers";
+import {
+  User,
+  FileText,
+  Shield,
+  Calendar,
+  Pill,
+  Printer,
+  Edit,
+  Lock,
+  ExternalLink,
+  Clock,
+  CheckCircle2,
+  AlertCircle
+} from "lucide-react";
 
 // Member A UI Components
-import { RecordCard } from "../components/ui/RecordCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
@@ -17,32 +30,53 @@ import { StatusToast } from "../components/ui/StatusToast";
 
 export default function PatientDashboardPage() {
   const { account } = useWallet();
-  const { fetchEHRRecords, fetchMyAccessList, grantAccess, revokeAccess, userProfile } = usePHR();
+  const {
+    fetchEHRRecords,
+    fetchMyAccessList,
+    grantAccess,
+    revokeAccess,
+    updatePatientDemographics,
+    fetchPatientAppointments,
+    patientDemographicsData,
+    userProfile,
+  } = usePHR();
 
-  const [activeTab, setActiveTab] = useState("records"); // "records" | "access" | "grant"
+  const [activeTab, setActiveTab] = useState("records"); // "records" | "demographics" | "access" | "grant" | "appointments"
   const [records, setRecords] = useState([]);
   const [accessList, setAccessList] = useState({ viewers: [], creators: [] });
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [txState, setTxState] = useState({ status: "idle", message: "", txHash: "", rawError: "" });
 
+  // Demographics edit modal state
+  const [isEditDemoOpen, setIsEditDemoOpen] = useState(false);
+  const [demoAddress, setDemoAddress] = useState("");
+  const [demoPhone, setDemoPhone] = useState("");
+  const [demoBlood, setDemoBlood] = useState("O+");
+  const [demoHeight, setDemoHeight] = useState(170);
+  const [demoWeight, setDemoWeight] = useState(65);
+  const [showAadhaar, setShowAadhaar] = useState(false);
+
   // Grant form state
   const [grantAddress, setGrantAddress] = useState("");
-  const [grantRole, setGrantRole] = useState("v"); // "v" | "c" | "m"
+  const [grantRole, setGrantRole] = useState("v");
 
   // Revoke modal state
-  const [revokeTarget, setRevokeTarget] = useState(null); // { address, role }
+  const [revokeTarget, setRevokeTarget] = useState(null);
 
   const loadData = useCallback(async () => {
     if (!account) return;
     try {
       setLoading(true);
-      const [ehrData, accessData] = await Promise.all([
+      const [ehrData, accessData, appts] = await Promise.all([
         fetchEHRRecords(account),
         fetchMyAccessList(),
+        fetchPatientAppointments(account),
       ]);
       setRecords([...ehrData].sort((a, b) => b.createdAt - a.createdAt));
       setAccessList(accessData);
+      setAppointments([...appts].sort((a, b) => b.dateTimestamp - a.dateTimestamp));
     } catch (err) {
       console.error("Error loading patient data:", err);
       setTxState({
@@ -53,12 +87,55 @@ export default function PatientDashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [account, fetchEHRRecords, fetchMyAccessList]);
+  }, [account, fetchEHRRecords, fetchMyAccessList, fetchPatientAppointments]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  useEffect(() => {
+    if (patientDemographicsData) {
+      setDemoAddress(patientDemographicsData.homeAddress || userProfile?.homeAddress || "");
+      setDemoPhone(patientDemographicsData.phoneNumber || userProfile?.phone || "");
+      setDemoBlood(patientDemographicsData.bloodType || "O+");
+      setDemoHeight(patientDemographicsData.heightCm || 170);
+      setDemoWeight(patientDemographicsData.weightKg || 65);
+    }
+  }, [patientDemographicsData, userProfile]);
+
+  // Handle Edit Demographics Submit
+  const handleSaveDemographics = async (e) => {
+    e.preventDefault();
+    setTxState({ status: "pending", message: "Updating patient demographics on Ethereum...", txHash: "" });
+    try {
+      setActionLoading(true);
+      const res = await updatePatientDemographics({
+        homeAddress: demoAddress,
+        phoneNumber: demoPhone,
+        bloodType: demoBlood,
+        heightCm: demoHeight,
+        weightKg: demoWeight,
+        photoIpfsCid: patientDemographicsData?.photoIpfsCid || "",
+      });
+      setTxState({
+        status: "success",
+        message: "Demographics successfully updated on blockchain!",
+        txHash: res.txHash,
+      });
+      setIsEditDemoOpen(false);
+      await loadData();
+    } catch (err) {
+      setTxState({
+        status: "error",
+        message: err.message || "Failed to update demographics.",
+        rawError: err.message,
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handle Grant Access
   const handleGrantAccess = async (e) => {
     e.preventDefault();
     setTxState({ status: "pending", message: "Granting permissions on Ethereum...", txHash: "" });
@@ -90,6 +167,7 @@ export default function PatientDashboardPage() {
     }
   };
 
+  // Handle Revoke Access
   const handleRevokeAccess = async () => {
     if (!revokeTarget) return;
     setTxState({ status: "pending", message: "Revoking access on Ethereum...", txHash: "" });
@@ -117,48 +195,97 @@ export default function PatientDashboardPage() {
 
   const ipfsGatewayBase = import.meta.env.VITE_PINATA_GATEWAY || "https://gateway.pinata.cloud/ipfs/";
 
+  const maskedAadhaar = patientDemographicsData?.aadhaarNumber
+    ? showAadhaar
+      ? patientDemographicsData.aadhaarNumber
+      : `XXXX-XXXX-${patientDemographicsData.aadhaarNumber.slice(-4)}`
+    : "Not Registered";
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {/* Patient Header Banner */}
       <div className="card" style={{ padding: "24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
-          <div>
-            <h2 style={{ fontSize: "var(--fs-h2)", fontWeight: "var(--fw-semibold)", color: "var(--text)" }}>
-              Welcome, {userProfile?.fullName || "Patient"}
-            </h2>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
-              <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>My Patient Address:</span>
-              <AddressChip address={account} isSelf={true} />
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div
+              style={{
+                width: "52px",
+                height: "52px",
+                borderRadius: "14px",
+                backgroundColor: "rgba(15, 118, 110, 0.12)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--primary-600)",
+              }}
+            >
+              <User size={28} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: "var(--fs-h2)", fontWeight: "var(--fw-semibold)", color: "var(--text)" }}>
+                Welcome, {userProfile?.fullName || "Patient"}
+              </h2>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>
+                  Aadhaar: <strong style={{ color: "var(--text)" }}>{maskedAadhaar}</strong>
+                </span>
+                <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>•</span>
+                <AddressChip address={account} isSelf={true} />
+              </div>
             </div>
           </div>
-          <Button variant="secondary" onClick={loadData} isLoading={loading} loadingText="Refreshing...">
-            🔄 Refresh Records
-          </Button>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <Button variant="secondary" onClick={() => window.print()} style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <Printer size={15} />
+              <span>Print Records</span>
+            </Button>
+            <Button variant="secondary" onClick={loadData} isLoading={loading} loadingText="Refreshing...">
+              🔄 Refresh
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--border)", paddingBottom: "8px" }}>
+      <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--border)", paddingBottom: "8px", flexWrap: "wrap" }}>
         <Button
           variant={activeTab === "records" ? "primary" : "secondary"}
           onClick={() => setActiveTab("records")}
           style={{ height: 38 }}
         >
-          📋 My Records ({records.length})
+          <FileText size={16} />
+          <span>My Health Records ({records.length})</span>
+        </Button>
+        <Button
+          variant={activeTab === "demographics" ? "primary" : "secondary"}
+          onClick={() => setActiveTab("demographics")}
+          style={{ height: 38 }}
+        >
+          <User size={16} />
+          <span>Demographics Profile (FR-4)</span>
+        </Button>
+        <Button
+          variant={activeTab === "appointments" ? "primary" : "secondary"}
+          onClick={() => setActiveTab("appointments")}
+          style={{ height: 38 }}
+        >
+          <Calendar size={16} />
+          <span>My Appointments ({appointments.length})</span>
         </Button>
         <Button
           variant={activeTab === "access" ? "primary" : "secondary"}
           onClick={() => setActiveTab("access")}
           style={{ height: 38 }}
         >
-          👥 Access List ({accessList.viewers.length + accessList.creators.length})
+          <Shield size={16} />
+          <span>Access Permissions ({accessList.viewers.length + accessList.creators.length})</span>
         </Button>
         <Button
           variant={activeTab === "grant" ? "primary" : "secondary"}
           onClick={() => setActiveTab("grant")}
           style={{ height: 38 }}
         >
-          ➕ Grant Access
+          ➕ Grant Doctor Access
         </Button>
       </div>
 
@@ -180,32 +307,277 @@ export default function PatientDashboardPage() {
             </p>
           ) : records.length === 0 ? (
             <EmptyState
-              title="No Health Records Yet"
-              description="You have no medical records stored on IPFS. Grant a doctor Creator access so they can upload your health records."
+              title="No Health Records Stored"
+              description="You have no medical records stored on IPFS. Grant a doctor Creator access so they can prescribe medications and attach diagnostic reports."
               actionLabel="Grant Access to Doctor"
               onAction={() => setActiveTab("grant")}
             />
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {records.map((rec, idx) => (
-                <RecordCard
-                  key={idx}
-                  record={{
-                    creatorName: rec.creator_name,
-                    creatorAddress: rec.creator_address,
-                    cid: rec.ipfs_location,
-                    createdAt: rec.createdAt,
-                    gatewayUrl: `${ipfsGatewayBase.endsWith("/") ? ipfsGatewayBase : ipfsGatewayBase + "/"}${rec.ipfs_location}`,
-                    fileName: `EHR Record #${records.length - idx}`,
-                  }}
-                />
+                <div key={idx} className="card" style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {/* Card Header */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px", borderBottom: "1px solid var(--border)", paddingBottom: "12px" }}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--primary-700)" }}>
+                          {rec.diagnosis || `Clinical Consultation #${records.length - idx}`}
+                        </h3>
+                        {rec.isDetailed && (
+                          <span style={{ padding: "2px 8px", borderRadius: "999px", backgroundColor: "rgba(15, 118, 110, 0.1)", color: "var(--primary-700)", fontSize: "11px", fontWeight: "600" }}>
+                            Verified Clinical Prescription
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", marginTop: "4px" }}>
+                        Consultant: <strong>{rec.creator_name}</strong> • Recorded: {new Date(rec.createdAt * 1000).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Prescribed Medications Table */}
+                  {Array.isArray(rec.medications) && rec.medications.length > 0 && (
+                    <div style={{ backgroundColor: "var(--bg)", padding: "16px", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px", color: "var(--primary-700)", fontWeight: "600", fontSize: "13px" }}>
+                        <Pill size={16} />
+                        <span>Prescribed Medications ({rec.medications.length})</span>
+                      </div>
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                          <thead>
+                            <tr style={{ borderBottom: "1px solid var(--border)", textAlign: "left", color: "var(--text-muted)", fontSize: "12px" }}>
+                              <th style={{ padding: "6px 8px" }}>Drug Name</th>
+                              <th style={{ padding: "6px 8px" }}>Dosage</th>
+                              <th style={{ padding: "6px 8px" }}>Frequency</th>
+                              <th style={{ padding: "6px 8px" }}>Duration</th>
+                              <th style={{ padding: "6px 8px" }}>Remarks</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rec.medications.map((m, mIdx) => (
+                              <tr key={mIdx} style={{ borderBottom: "1px solid rgba(0,0,0,0.03)" }}>
+                                <td style={{ padding: "8px", fontWeight: "600", color: "var(--text)" }}>{m.name}</td>
+                                <td style={{ padding: "8px", color: "var(--text-muted)" }}>{m.dosage}</td>
+                                <td style={{ padding: "8px", color: "var(--text-muted)" }}>{m.frequency}</td>
+                                <td style={{ padding: "8px", color: "var(--text-muted)" }}>{m.duration}</td>
+                                <td style={{ padding: "8px", color: "var(--text-muted)" }}>{m.remarks}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recommended Lab Tests & Follow-Up */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "12px" }}>
+                    {Array.isArray(rec.tests) && rec.tests.length > 0 && (
+                      <div style={{ backgroundColor: "var(--bg)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                        <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", display: "block", marginBottom: "6px" }}>
+                          Recommended Tests / Diagnostics:
+                        </span>
+                        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                          {rec.tests.map((t, tIdx) => (
+                            <span key={tIdx} style={{ padding: "2px 8px", borderRadius: "6px", backgroundColor: "var(--surface)", border: "1px solid var(--border)", fontSize: "12px", color: "var(--text)" }}>
+                              🧪 {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {rec.followUpNotes && (
+                      <div style={{ backgroundColor: "var(--bg)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                        <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>
+                          Doctor's Follow-Up Advice:
+                        </span>
+                        <p style={{ fontSize: "13px", color: "var(--text)", margin: 0 }}>{rec.followUpNotes}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Encrypted Document & IPFS CID */}
+                  {rec.ipfs_location && (
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", paddingTop: "8px", borderTop: "1px solid var(--border)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <Lock size={14} color="var(--primary-600)" />
+                        <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                          Encrypted Report IPFS CID: <code>{rec.ipfs_location.slice(0, 16)}…{rec.ipfs_location.slice(-8)}</code>
+                        </span>
+                      </div>
+                      <a
+                        href={`${ipfsGatewayBase.endsWith("/") ? ipfsGatewayBase : ipfsGatewayBase + "/"}${rec.ipfs_location}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "var(--primary-600)", fontWeight: "600", textDecoration: "none" }}
+                      >
+                        <span>View Encrypted Document</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* TAB 2: Access List (FR-3 & FR-7) */}
+      {/* TAB 2: Demographics Profile (FR-4) */}
+      {activeTab === "demographics" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "24px" }}>
+          <div className="card" style={{ padding: "28px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h3 style={{ fontSize: "var(--fs-h3)", fontWeight: "var(--fw-semibold)" }}>
+                Patient Identification & Demographics
+              </h3>
+              <Button variant="secondary" onClick={() => setIsEditDemoOpen(true)} style={{ height: 34, fontSize: "13px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                <Edit size={14} />
+                <span>Edit Profile</span>
+              </Button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>Full Name:</span>
+                <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)" }}>{userProfile?.fullName || "—"}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>Aadhaar Number:</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)" }}>{maskedAadhaar}</span>
+                  {patientDemographicsData?.aadhaarNumber && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAadhaar(!showAadhaar)}
+                      style={{ border: "none", background: "transparent", color: "var(--primary-600)", cursor: "pointer", fontSize: "11px", fontWeight: "600" }}
+                    >
+                      {showAadhaar ? "Hide" : "Show"}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>Blood Group:</span>
+                <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--danger)" }}>{patientDemographicsData?.bloodType || "O+"}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>Height & Weight:</span>
+                <span style={{ fontSize: "14px", fontWeight: "500", color: "var(--text)" }}>
+                  {patientDemographicsData?.heightCm || 170} cm • {patientDemographicsData?.weightKg || 65} kg
+                </span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>Phone Number:</span>
+                <span style={{ fontSize: "14px", fontWeight: "500", color: "var(--text)" }}>{patientDemographicsData?.phoneNumber || userProfile?.phone || "—"}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>Home Residential Address:</span>
+                <span style={{ fontSize: "14px", fontWeight: "500", color: "var(--text)", maxWidth: "240px", textAlign: "right" }}>
+                  {patientDemographicsData?.homeAddress || userProfile?.homeAddress || "—"}
+                </span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0" }}>
+                <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>Date of Birth:</span>
+                <span style={{ fontSize: "14px", fontWeight: "500", color: "var(--text)" }}>{userProfile?.birthday || "—"}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: My Appointments (FR-9) */}
+      {activeTab === "appointments" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <div className="card" style={{ padding: "24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <div>
+                <h3 style={{ fontSize: "var(--fs-h3)", fontWeight: "var(--fw-semibold)" }}>
+                  My Booked Appointments ({appointments.length})
+                </h3>
+                <p style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>
+                  Track your appointment confirmations and consultation schedules.
+                </p>
+              </div>
+              <Button variant="primary" onClick={() => window.location.href = "/appointments"} style={{ height: 34, fontSize: "13px" }}>
+                ➕ Book New Appointment
+              </Button>
+            </div>
+
+            {appointments.length === 0 ? (
+              <EmptyState
+                title="No Appointments Scheduled"
+                description="You haven't scheduled any doctor consultations yet."
+                actionLabel="Book an Appointment"
+                onAction={() => window.location.href = "/appointments"}
+              />
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {appointments.map((appt) => (
+                  <div
+                    key={appt.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "16px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--border)",
+                      backgroundColor: "var(--bg)",
+                      flexWrap: "wrap",
+                      gap: "12px",
+                    }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ fontWeight: "600", fontSize: "14px", color: "var(--text)" }}>
+                          {appt.specialty} Consultation
+                        </span>
+                        <span
+                          style={{
+                            padding: "2px 8px",
+                            borderRadius: "999px",
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            backgroundColor:
+                              appt.status === "Approved"
+                                ? "rgba(16, 185, 129, 0.1)"
+                                : appt.status === "Completed"
+                                ? "rgba(59, 130, 246, 0.1)"
+                                : appt.status === "Cancelled"
+                                ? "rgba(239, 68, 68, 0.1)"
+                                : "rgba(245, 158, 11, 0.1)",
+                            color:
+                              appt.status === "Approved"
+                                ? "var(--success)"
+                                : appt.status === "Completed"
+                                ? "#3B82F6"
+                                : appt.status === "Cancelled"
+                                ? "var(--danger)"
+                                : "#D97706",
+                          }}
+                        >
+                          {appt.status}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "12px", color: "var(--text-muted)" }}>
+                        <span>Doctor: <AddressChip address={appt.doctorAddress} /></span>
+                        <span>•</span>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                          <Clock size={13} />
+                          {new Date(appt.dateTimestamp * 1000).toLocaleDateString()} at {appt.timeSlot}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 4: Access List (FR-3 & FR-7) */}
       {activeTab === "access" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "24px" }}>
           {/* Viewers Column */}
@@ -281,13 +653,13 @@ export default function PatientDashboardPage() {
         </div>
       )}
 
-      {/* TAB 3: Grant Access (FR-4) */}
+      {/* TAB 5: Grant Access (FR-4) */}
       {activeTab === "grant" && (
         <div style={{ maxWidth: 560 }}>
           <div className="card" style={{ padding: "32px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
               <h3 style={{ fontSize: "var(--fs-h3)", fontWeight: "var(--fw-semibold)", color: "var(--text)" }}>
-                Grant Record Access
+                Grant Record Access to Doctor
               </h3>
               <GasBadge />
             </div>
@@ -297,7 +669,7 @@ export default function PatientDashboardPage() {
 
             <form onSubmit={handleGrantAccess}>
               <Input
-                label="Target Ethereum Address"
+                label="Target Doctor Ethereum Address"
                 placeholder="0x..."
                 value={grantAddress}
                 onChange={(e) => setGrantAddress(e.target.value)}
@@ -331,6 +703,65 @@ export default function PatientDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Edit Demographics Modal */}
+      <Modal
+        isOpen={isEditDemoOpen}
+        onClose={() => setIsEditDemoOpen(false)}
+        onConfirm={handleSaveDemographics}
+        title="Edit Patient Demographics"
+        confirmLabel="Save Demographics"
+        variant="primary"
+        isLoading={actionLoading}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <Input
+            label="Residential Address"
+            value={demoAddress}
+            onChange={(e) => setDemoAddress(e.target.value)}
+            required
+          />
+          <Input
+            label="Phone Number"
+            value={demoPhone}
+            onChange={(e) => setDemoPhone(e.target.value)}
+            required
+          />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
+            <Select
+              label="Blood Group"
+              value={demoBlood}
+              onChange={(e) => setDemoBlood(e.target.value)}
+              options={[
+                { value: "A+", label: "A+" },
+                { value: "A-", label: "A-" },
+                { value: "B+", label: "B+" },
+                { value: "B-", label: "B-" },
+                { value: "AB+", label: "AB+" },
+                { value: "AB-", label: "AB-" },
+                { value: "O+", label: "O+" },
+                { value: "O-", label: "O-" },
+              ]}
+            />
+            <Input
+              label="Height (cm)"
+              type="number"
+              value={demoHeight}
+              onChange={(e) => setDemoHeight(e.target.value)}
+            />
+            <Input
+              label="Weight (kg)"
+              type="number"
+              value={demoWeight}
+              onChange={(e) => setDemoWeight(e.target.value)}
+            />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <GasBadge />
+            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>This action requires a gas transaction.</span>
+          </div>
+        </div>
+      </Modal>
 
       {/* Revoke Confirmation Modal (FR-7) */}
       <Modal

@@ -1,25 +1,22 @@
 import React from 'react';
 import { AddressChip } from './AddressChip';
+import { Activity, Calendar, ShieldCheck, UserCheck, Stethoscope } from 'lucide-react';
 
 /**
- * Presentational TopBar Component
- * @param {Object} props
- * @param {string} [props.networkName='Hardhat Local (31337)']
- * @param {string} [props.address]
- * @param {'patient'|'doctor'} [props.activeRole='patient']
- * @param {Function} [props.onRoleSwitch]
- * @param {Function} [props.onConnect]
+ * Presentational TopBar Component for Intellihealth
  */
 export function TopBar({
   networkName = 'Hardhat Local (31337)',
   address = '',
   activeRole = 'patient',
+  activeTab = '',
   onRoleSwitch,
+  onNavigate,
   onConnect,
   className = ''
 }) {
   const barStyle = {
-    height: '64px',
+    height: '68px',
     backgroundColor: 'var(--surface)',
     borderBottom: '1px solid var(--border)',
     display: 'flex',
@@ -27,57 +24,109 @@ export function TopBar({
     justifyContent: 'space-between',
     padding: '0 24px',
     boxShadow: 'var(--shadow-sm)',
+    flexWrap: 'wrap',
+    gap: '12px',
   };
 
-  const toggleStyle = {
-    display: 'inline-flex',
-    backgroundColor: 'var(--bg)',
-    borderRadius: 'var(--radius-full)',
-    padding: '3px',
-    border: '1px solid var(--border)',
-  };
-
-  const getRoleBtnStyle = (role) => ({
-    padding: '4px 14px',
-    borderRadius: 'var(--radius-full)',
-    fontSize: 'var(--fs-small)',
-    fontWeight: 'var(--fw-medium)',
+  const navItemStyle = (isActive) => ({
+    padding: '6px 12px',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: 600,
     border: 'none',
     cursor: 'pointer',
-    backgroundColor: activeRole === role ? 'var(--primary-600)' : 'transparent',
-    color: activeRole === role ? '#FFFFFF' : 'var(--text-muted)',
-    transition: 'all var(--transition-fast)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    backgroundColor: isActive ? 'var(--primary-600)' : 'transparent',
+    color: isActive ? '#FFFFFF' : 'var(--text-muted)',
+    transition: 'all 0.15s ease',
   });
 
   return (
     <header style={barStyle} className={`top-bar ${className}`}>
       {/* Brand */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src="/logo.svg" alt="PHR Chain Logo" style={{ width: '32px', height: '32px' }} />
+      <div
+        style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+        onClick={() => onNavigate && onNavigate('/')}
+      >
+        <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: 'rgba(15, 118, 110, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <ShieldCheck size={22} color="var(--primary-600)" />
         </div>
         <div>
-          <h1 style={{ fontSize: 'var(--fs-h3)', fontWeight: 'var(--fw-semibold)', color: 'var(--primary-600)', lineHeight: 1 }}>
-            PHR Chain
+          <h1 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--primary-600)', lineHeight: 1.1, margin: 0 }}>
+            Intellihealth
           </h1>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Decentralized Health Records</span>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
+            Secured Decentralized EHR & AI System
+          </span>
         </div>
       </div>
 
-      {/* Middle Network & Role Switcher */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {/* Main Navigation Links */}
+      {address && (
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'var(--bg)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+          <button
+            type="button"
+            style={navItemStyle(activeRole === 'patient' && !activeTab)}
+            onClick={() => onRoleSwitch && onRoleSwitch('patient')}
+          >
+            <UserCheck size={15} />
+            <span>Patient Portal</span>
+          </button>
+          <button
+            type="button"
+            style={navItemStyle(activeRole === 'doctor' && !activeTab)}
+            onClick={() => onRoleSwitch && onRoleSwitch('doctor')}
+          >
+            <Stethoscope size={15} />
+            <span>Doctor Portal</span>
+          </button>
+          <button
+            type="button"
+            style={navItemStyle(activeRole === 'admin' && !activeTab)}
+            onClick={() => onRoleSwitch && onRoleSwitch('admin')}
+          >
+            <ShieldCheck size={15} />
+            <span>Admin Portal</span>
+          </button>
+          <button
+            type="button"
+            style={navItemStyle(activeTab === 'appointments')}
+            onClick={() => onNavigate && onNavigate('/appointments')}
+          >
+            <Calendar size={15} />
+            <span>Appointments</span>
+          </button>
+          <button
+            type="button"
+            style={{
+              ...navItemStyle(activeTab === 'ai-diagnosis'),
+              backgroundColor: activeTab === 'ai-diagnosis' ? '#6366F1' : 'transparent',
+              color: activeTab === 'ai-diagnosis' ? '#FFFFFF' : 'var(--accent-500)',
+            }}
+            onClick={() => onNavigate && onNavigate('/ai-diagnosis')}
+          >
+            <Activity size={15} />
+            <span>AI ML Diagnosis</span>
+          </button>
+        </nav>
+      )}
+
+      {/* Right: Network & Wallet */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         {/* Network Chip */}
         <div
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            padding: '3px 10px',
+            padding: '4px 10px',
             backgroundColor: 'var(--primary-50)',
             color: 'var(--primary-700)',
-            borderRadius: 'var(--radius-full)',
-            fontSize: 'var(--fs-small)',
-            fontWeight: 'var(--fw-medium)',
+            borderRadius: '999px',
+            fontSize: '12px',
+            fontWeight: 500,
             border: '1px solid rgba(15, 118, 110, 0.2)',
           }}
         >
@@ -85,50 +134,31 @@ export function TopBar({
           <span>{networkName}</span>
         </div>
 
-        {/* Role Toggle */}
-        {address && onRoleSwitch && (
-          <div style={toggleStyle}>
+        {/* Wallet Status */}
+        <div>
+          {address ? (
+            <AddressChip address={address} isSelf={true} />
+          ) : (
             <button
               type="button"
-              style={getRoleBtnStyle('patient')}
-              onClick={() => onRoleSwitch('patient')}
+              onClick={onConnect}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--primary-600)',
+                color: '#FFFFFF',
+                border: 'none',
+                fontWeight: 600,
+                fontSize: '13px',
+                cursor: 'pointer',
+              }}
             >
-              Patient View
+              Connect Wallet
             </button>
-            <button
-              type="button"
-              style={getRoleBtnStyle('doctor')}
-              onClick={() => onRoleSwitch('doctor')}
-            >
-              Doctor View
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Wallet Status */}
-      <div>
-        {address ? (
-          <AddressChip address={address} isSelf={true} />
-        ) : (
-          <button
-            type="button"
-            onClick={onConnect}
-            style={{
-              padding: '6px 14px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--primary-600)',
-              color: '#FFFFFF',
-              border: 'none',
-              fontWeight: 'var(--fw-medium)',
-              fontSize: 'var(--fs-small)',
-              cursor: 'pointer',
-            }}
-          >
-            Connect Wallet
-          </button>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );
 }
+

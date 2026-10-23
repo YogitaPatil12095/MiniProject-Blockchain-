@@ -76,7 +76,12 @@ export default function DoctorDashboardPage() {
   const [testsInput, setTestsInput] = useState("");
   const [followUpNotes, setFollowUpNotes] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
-  const [encryptionPassphrase, setEncryptionPassphrase] = useState("Intellihealth-Secure-Key-2024");
+  const [encryptionPassphrase, setEncryptionPassphrase] = useState(
+    // ⚠️ SECURITY WARNING: This default passphrase is for DEMO / DEVELOPMENT USE ONLY.
+    // It is repo-visible and any file encrypted with it is decryptable by anyone who
+    // reads the source. In production, derive a per-user key via MetaMask personal_sign.
+    "Intellihealth-Secure-Key-2024"
+  );
   const [uploadStep, setUploadStep] = useState(1);
   const [createLoading, setCreateLoading] = useState(false);
   const [createToast, setCreateToast] = useState({ status: "idle", message: "", txHash: "", rawError: "" });
@@ -202,25 +207,8 @@ export default function DoctorDashboardPage() {
       // Step 1: Encrypt file if provided and pin to IPFS
       setUploadStep(1);
       if (selectedFile) {
-        // Pre-validate file type and size before encrypting/uploading
-        const ALLOWED_EXTS = ['.pdf', '.png', '.jpg', '.jpeg', '.dcm'];
-        const ext = '.' + selectedFile.name.split('.').pop().toLowerCase();
-        if (!ALLOWED_EXTS.includes(ext)) {
-          setCreateToast({ status: 'error', message: 'Invalid file type. Allowed: PDF, PNG, JPG, JPEG, DCM.', rawError: '' });
-          setCreateLoading(false);
-          return;
-        }
-        if (selectedFile.size === 0) {
-          setCreateToast({ status: 'error', message: 'The selected file is empty.', rawError: '' });
-          setCreateLoading(false);
-          return;
-        }
-        if (selectedFile.size > 10 * 1024 * 1024) {
-          setCreateToast({ status: 'error', message: 'File exceeds 10 MB limit. Please use a smaller file.', rawError: '' });
-          setCreateLoading(false);
-          return;
-        }
-
+        // File type/size validation is delegated to uploadToIPFS (which throws on invalid input).
+        // We catch those errors in the outer try/catch and display them as toast errors.
         setCreateToast({
           status: "pending",
           message: "Step 1/3: Encrypting diagnostic document (AES-GCM 256-bit) & Pinning to IPFS...",

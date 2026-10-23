@@ -36,6 +36,12 @@ export async function deriveKey(secretKey) {
  * @param {ArrayBuffer} data 
  * @param {string} secretKey 
  * @returns {Promise<{ encryptedBlob: Blob, iv: Uint8Array }>}
+ *
+ * ⚠️ SECURITY WARNING: The default secretKey ("Intellihealth-HIPAA-Key") is for
+ * DEMO / DEVELOPMENT USE ONLY. It is repo-visible and predictable. Any file encrypted
+ * with this default is decryptable by anyone who reads the source code.
+ * In production, derive a unique per-user key via MetaMask personal_sign or a
+ * proper Key Management Service (KMS) — never rely on a static, hardcoded passphrase.
  */
 export async function encryptMedicalFile(data, secretKey = "Intellihealth-HIPAA-Key") {
   const key = await deriveKey(secretKey);
@@ -63,6 +69,9 @@ export async function encryptMedicalFile(data, secretKey = "Intellihealth-HIPAA-
  * @param {ArrayBuffer} encryptedBuffer 
  * @param {string} secretKey 
  * @returns {Promise<ArrayBuffer>}
+ *
+ * ⚠️ SECURITY WARNING: The default secretKey ("Intellihealth-HIPAA-Key") is for
+ * DEMO / DEVELOPMENT USE ONLY — see encryptMedicalFile for details.
  */
 export async function decryptMedicalFile(encryptedBuffer, secretKey = "Intellihealth-HIPAA-Key") {
   const key = await deriveKey(secretKey);

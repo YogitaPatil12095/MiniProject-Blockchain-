@@ -3,6 +3,7 @@ services:
     name: intellihealth-api
     env: node
     plan: free
+    rootDir: backend
     buildCommand: npm install
     startCommand: node server.js
     envVars:
@@ -11,4 +12,6 @@ services:
       - key: PORT
         value: 10000
       - key: ALLOWED_ORIGIN
+        sync: false
+      - key: ADMIN_ADDRESS
         sync: false

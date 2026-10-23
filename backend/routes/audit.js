@@ -1,10 +1,19 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const AuditLog = require('../models/AuditLog');
 const authMiddleware = require('../middleware/auth');
 
+/** Returns true when Mongoose has an active connection. */
+function isDbReady() {
+  return mongoose.connection.readyState === 1; // 1 = connected
+}
+
 // POST /api/audit/log — requires auth, save AuditLog
 router.post('/log', authMiddleware, async (req, res) => {
+  if (!isDbReady()) {
+    return res.status(503).json({ error: 'Database unavailable', demoMode: true });
+  }
   try {
     const { event, role, details } = req.body;
     if (!event) {
@@ -27,6 +36,9 @@ router.post('/log', authMiddleware, async (req, res) => {
 
 // GET /api/audit/logs — requires auth + admin check
 router.get('/logs', authMiddleware, async (req, res) => {
+  if (!isDbReady()) {
+    return res.status(503).json({ error: 'Database unavailable', demoMode: true });
+  }
   try {
     const adminAddress = process.env.ADMIN_ADDRESS;
     if (!adminAddress) {

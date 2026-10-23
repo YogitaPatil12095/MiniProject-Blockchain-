@@ -1,10 +1,19 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const ChatbotLog = require('../models/ChatbotLog');
 const authMiddleware = require('../middleware/auth');
 
+/** Returns true when Mongoose has an active connection. */
+function isDbReady() {
+  return mongoose.connection.readyState === 1; // 1 = connected
+}
+
 // POST /api/chatbot/log — upsert ChatbotLog by sessionId + walletAddress, push messages
 router.post('/log', authMiddleware, async (req, res) => {
+  if (!isDbReady()) {
+    return res.status(503).json({ error: 'Database unavailable', demoMode: true });
+  }
   try {
     const { sessionId, role, messages } = req.body;
     if (!sessionId) {
@@ -30,6 +39,9 @@ router.post('/log', authMiddleware, async (req, res) => {
 
 // GET /api/chatbot/logs/:address — requires auth, address must match header
 router.get('/logs/:address', authMiddleware, async (req, res) => {
+  if (!isDbReady()) {
+    return res.status(503).json({ error: 'Database unavailable', demoMode: true });
+  }
   try {
     const address = req.params.address.toLowerCase().trim();
     if (req.walletAddress !== address) {

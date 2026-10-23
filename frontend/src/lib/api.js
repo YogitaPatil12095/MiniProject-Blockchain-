@@ -121,3 +121,18 @@ export async function logAuditEvent(walletAddress, event, role, details) {
     return null;
   }
 }
+
+/**
+ * GET /api/audit/logs
+ * Returns all audit logs (admin only — requires ADMIN_ADDRESS set on server).
+ * Sends x-wallet-address header for the admin address check.
+ * Returns empty array on error or if not authorized.
+ */
+export async function getAuditLogs(adminAddress) {
+  try {
+    return await apiFetch('/api/audit/logs', {}, adminAddress);
+  } catch (err) {
+    console.warn('[api] getAuditLogs failed:', err.message);
+    return [];
+  }
+}

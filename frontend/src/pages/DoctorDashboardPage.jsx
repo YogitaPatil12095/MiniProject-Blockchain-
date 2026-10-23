@@ -80,7 +80,9 @@ export default function DoctorDashboardPage() {
     // ⚠️ SECURITY WARNING: This default passphrase is for DEMO / DEVELOPMENT USE ONLY.
     // It is repo-visible and any file encrypted with it is decryptable by anyone who
     // reads the source. In production, derive a per-user key via MetaMask personal_sign.
-    "Intellihealth-Secure-Key-2024"
+    // NOTE: Must match the default in frontend/src/lib/crypto.js ("Intellihealth-HIPAA-Key")
+    // so that encrypt (here) and decrypt (crypto.js) use the same key.
+    "Intellihealth-HIPAA-Key"
   );
   const [uploadStep, setUploadStep] = useState(1);
   const [createLoading, setCreateLoading] = useState(false);

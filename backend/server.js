@@ -34,7 +34,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // MongoDB connection — graceful degradation if not configured
-const mongoUri = process.env.MONGOOSE_URI || process.env.MONGODB_URI;
+const mongoUri = process.env.MONGODB_URI;
 if (mongoUri) {
   mongoose.connect(mongoUri)
     .then(() => console.log('✅ Connected to MongoDB Atlas'))
@@ -42,7 +42,7 @@ if (mongoUri) {
       console.warn('⚠️  MongoDB connection failed — running without database (demo mode):', err.message);
     });
 } else {
-  console.warn('⚠️  No MONGODB_URI / MONGOOSE_URI set — running without database (demo mode)');
+  console.warn('⚠️  No MONGODB_URI set — running without database (demo mode)');
 }
 
 const PORT = process.env.PORT || 4000;

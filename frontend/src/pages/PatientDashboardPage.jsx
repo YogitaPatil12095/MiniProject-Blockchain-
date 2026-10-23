@@ -334,12 +334,18 @@ export default function PatientDashboardPage() {
               Loading health records from Ethereum & IPFS...
             </p>
           ) : records.length === 0 ? (
-            <EmptyState
-              title="No Health Records Stored"
-              description="You have no medical records stored on IPFS. Grant a doctor Creator access so they can prescribe medications and attach diagnostic reports."
-              actionLabel="Grant Access to Doctor"
-              onAction={() => setActiveTab("grant")}
-            />
+            <div className="card" style={{ padding: "32px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+              <div style={{ fontSize: "48px" }}>👋</div>
+              <h3 style={{ fontSize: "var(--fs-h3)", fontWeight: "var(--fw-semibold)", color: "var(--text)", margin: 0 }}>
+                Welcome to Your Health Portal!
+              </h3>
+              <p style={{ color: "var(--text-muted)", fontSize: "var(--fs-body)", maxWidth: 440, lineHeight: 1.6, margin: 0 }}>
+                Your health records will appear here once your doctor adds them. To get started, grant your doctor Creator access from the <strong>Grant Doctor Access</strong> tab.
+              </p>
+              <Button variant="primary" onClick={() => setActiveTab("grant")} style={{ height: 40, fontSize: "14px" }}>
+                Grant Doctor Access
+              </Button>
+            </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {records.map((rec, idx) => (

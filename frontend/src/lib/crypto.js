@@ -79,3 +79,34 @@ export async function decryptMedicalFile(encryptedBuffer, secretKey = "Intellihe
     data
   );
 }
+
+/**
+ * Verifies that an encrypt → decrypt round-trip produces byte-identical output.
+ * Useful for testing key/passphrase correctness before storing on IPFS.
+ *
+ * @param {ArrayBuffer} fileArrayBuffer - Original file bytes
+ * @param {string} secretKey - Passphrase used for encryption (default matches encryptMedicalFile default)
+ * @returns {Promise<{ valid: boolean, error?: string }>}
+ */
+export async function verifyEncryption(fileArrayBuffer, secretKey = "Intellihealth-HIPAA-Key") {
+  try {
+    const encryptedBlob = await encryptMedicalFile(fileArrayBuffer, secretKey);
+    const encryptedBuffer = await encryptedBlob.arrayBuffer();
+    const decryptedBuffer = await decryptMedicalFile(encryptedBuffer, secretKey);
+
+    const original = new Uint8Array(fileArrayBuffer);
+    const decrypted = new Uint8Array(decryptedBuffer);
+
+    if (original.length !== decrypted.length) {
+      return { valid: false, error: `Length mismatch: ${original.length} vs ${decrypted.length}` };
+    }
+    for (let i = 0; i < original.length; i++) {
+      if (original[i] !== decrypted[i]) {
+        return { valid: false, error: `Byte mismatch at index ${i}` };
+      }
+    }
+    return { valid: true };
+  } catch (err) {
+    return { valid: false, error: err.message };
+  }
+}

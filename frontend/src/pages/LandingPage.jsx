@@ -154,6 +154,75 @@ export default function LandingPage() {
         </div>
       </div>
 
+      {/* How it Works Section */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "64px 24px 0" }}>
+        <div style={{ textAlign: "center", marginBottom: "40px" }}>
+          <h2 style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--text)", marginBottom: "8px" }}>
+            How It Works
+          </h2>
+          <p style={{ color: "var(--text-muted)", fontSize: "15px", maxWidth: 520, margin: "0 auto" }}>
+            Three simple steps to get started with your secure health records.
+          </p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px" }}>
+          {[
+            {
+              step: "1",
+              title: "Connect MetaMask Wallet",
+              desc: "Install MetaMask and connect your Ethereum wallet. Your wallet address is your unique identity on the Intellihealth platform.",
+            },
+            {
+              step: "2",
+              title: "Admin Registers You",
+              desc: "Contact your hospital administrator with your wallet address. The admin will register you as a Doctor or Patient on the blockchain with Aadhaar verification.",
+            },
+            {
+              step: "3",
+              title: "Access Your Dashboard",
+              desc: "Once registered, you are automatically routed to your role-specific dashboard — Doctor Portal or Patient Health Portal.",
+            },
+          ].map((item) => (
+            <div
+              key={item.step}
+              style={{
+                backgroundColor: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-lg)",
+                padding: "28px 24px",
+                boxShadow: "var(--shadow-card)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}
+            >
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: "50%",
+                  backgroundColor: "var(--primary-600)",
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "18px",
+                  fontWeight: 800,
+                  flexShrink: 0,
+                }}
+              >
+                {item.step}
+              </div>
+              <h3 style={{ fontSize: "15px", fontWeight: 700, color: "var(--text)", margin: 0 }}>
+                {item.title}
+              </h3>
+              <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6, margin: 0 }}>
+                {item.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Roles & Workflows Section */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "64px 24px" }}>
         <div style={{ textAlign: "center", marginBottom: "48px" }}>

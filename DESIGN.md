@@ -110,3 +110,59 @@ Intellihealth features a modern, clean, clinical dark-mode aesthetic with vibran
   - *Chest X-Ray Scanner* (Pneumonia Detection)
   - *Brain MRI Scanner* (Tumor Detection)
 - **Diagnostic Result Card:** Visual heatmap / highlight, detection result ("Normal" vs "Detected"), and confidence score percentage with disclaimer: *"Preliminary AI analysis only. Consult a registered physician for official diagnosis."*
+
+---
+
+## 7. Backend API Architecture
+
+The Express REST API (`backend/`) provides off-chain supplementary data storage using MongoDB Atlas. It is additive — all medical records, access control, and role management remain exclusively on-chain via `PHR.sol`. The backend handles data that does not need blockchain immutability: display profiles, chatbot session history, audit event logs, and appointment notes.
+
+### API Endpoints
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/api/health` | None | Health check |
+| GET | `/api/profile/:address` | None | Get display profile by wallet address |
+| PUT | `/api/profile/:address` | `x-wallet-address` header | Upsert display profile |
+| POST | `/api/chatbot/log` | `x-wallet-address` header | Push messages to chatbot session log |
+| GET | `/api/chatbot/logs/:address` | `x-wallet-address` header | Get chatbot history for address |
+| POST | `/api/audit/log` | `x-wallet-address` header | Save audit event |
+| GET | `/api/audit/logs` | `x-wallet-address` + `ADMIN_ADDRESS` env | Admin: fetch all audit logs |
+
+### MongoDB Schema Descriptions
+
+**UserProfile** — Off-chain display metadata for a registered wallet address.
+```
+walletAddress (string, unique, lowercase) — the user's Ethereum wallet
+displayName (string) — optional display name (different from on-chain fullName)
+profilePhotoCID (string) — IPFS CID of profile photo
+displayPreferences (Mixed) — UI preferences
+lastLoginAt, createdAt, updatedAt (Date)
+```
+
+**ChatbotLog** — Chatbot conversation sessions per wallet address.
+```
+walletAddress (string, lowercase) — session owner
+sessionId (string) — client-generated UUID for the session
+role (enum: admin|doctor|patient) — user's role at session time
+messages (array) — [{role, content, timestamp}]
+createdAt, updatedAt (Date)
+```
+
+**AuditLog** — Append-only event log for security and compliance.
+```
+event (string, required) — event type (e.g. 'EHR_CREATED', 'ACCESS_GRANTED')
+walletAddress (string, lowercase) — actor's wallet
+role (enum: admin|doctor|patient|system) — actor's role
+details (Mixed) — arbitrary event metadata
+timestamp (Date)
+```
+
+**AppointmentMeta** — Off-chain notes supplementing the on-chain appointment struct.
+```
+appointmentId (string, unique) — matches on-chain appointment ID
+patientAddress, doctorAddress (string, lowercase)
+notes (string) — off-chain appointment notes
+cancellationReason (string)
+createdAt, updatedAt (Date)
+```

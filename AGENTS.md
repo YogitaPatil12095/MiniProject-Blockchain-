@@ -35,23 +35,44 @@ phr-dapp/
 ├── AGENTS.md  PRD.md  MEMORY.md  MILESTONES.md  DESIGN.md  REVIEW.md  ROLES.md
 ├── contracts/PHR.sol
 ├── test/PHR.test.js
-├── scripts/deploy.js            # also writes frontend/src/contract.json
+├── scripts/
+│   ├── deploy.js                # writes frontend/src/contract.json
+│   └── deploy-and-export.js    # also writes backend/contract.json
 ├── hardhat.config.js
 ├── .env.example  .gitignore  README.md
+├── backend/
+│   ├── server.js               # Express REST API entry point (port 4000)
+│   ├── models/                 # Mongoose schemas (UserProfile, ChatbotLog, AuditLog, AppointmentMeta)
+│   ├── routes/                 # REST route handlers (profile, chatbot, audit)
+│   ├── middleware/auth.js      # Wallet-address header auth
+│   ├── render.yaml             # Render.com deployment manifest
+│   └── package.json
 └── frontend/
+    ├── vercel.json             # SPA rewrite rule for Vercel
     ├── .env.example
+    ├── .env.production.example
     └── src/ (components, pages, lib, context, hooks, contract.json)
 ```
 
 ## 5. Commands
 
 ```bash
+# First-time setup (root + frontend + backend)
+npm run install:all
+
+# Primary: start blockchain + deploy + frontend in one command
+npm run dev
+
+# Backend API server (requires backend/.env with MONGODB_URI)
+npm run start:backend
+
+# Individual commands (manual multi-terminal alternative)
 npm install                                        # root deps
 npx hardhat compile
 npx hardhat test                                   # must be all green, gas report printed
 npx hardhat node                                   # terminal 1: local chain
 npx hardhat run scripts/deploy.js --network localhost   # terminal 2
-cd frontend && npm install && npm run dev
+cd frontend && npm install && npm run dev          # terminal 3
 ```
 
 ## 6. Working rules

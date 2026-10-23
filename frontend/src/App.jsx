@@ -54,7 +54,7 @@ function ProtectedRoute({ allowedRole, children }) {
   if (!isRegistered) return <Navigate to="/register" replace />;
 
   // Wrong role → redirect to their own dashboard
-  if (effectiveRole === "admin")   return <Navigate to="/admin" replace />;
+  if (effectiveRole === "admin")   return <Navigate to="/sys-panel-9f3a" replace />;
   if (effectiveRole === "doctor")  return <Navigate to="/doctor" replace />;
   return <Navigate to="/patient" replace />;
 }
@@ -78,7 +78,7 @@ function RoleRedirect() {
     );
   }
 
-  if (isAdmin)                         return <Navigate to="/admin"   replace />;
+  if (isAdmin)                         return <Navigate to="/sys-panel-9f3a"   replace />;
   if (isRegistered && userRole === "doctor")  return <Navigate to="/doctor"  replace />;
   if (isRegistered && userRole === "patient") return <Navigate to="/patient" replace />;
 
@@ -112,7 +112,7 @@ function NavigationWrapper() {
     : location.pathname === "/ai-diagnosis" ? "ai-diagnosis"
     : "";
   const activeRole = location.pathname === "/doctor" ? "doctor"
-    : location.pathname === "/admin" ? "admin"
+    : location.pathname === "/sys-panel-9f3a" ? "admin"
     : location.pathname === "/patient" ? "patient"
     : "";
 
@@ -150,7 +150,7 @@ function MainRoutes() {
 
         {/* ── RBAC Protected Portals ── */}
         <Route
-          path="/admin"
+          path="/sys-panel-9f3a"
           element={
             <ProtectedRoute allowedRole="admin">
               <AdminDashboardPage />

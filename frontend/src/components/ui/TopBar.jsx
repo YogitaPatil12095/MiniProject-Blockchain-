@@ -99,7 +99,7 @@ export function TopBar({
               type="button"
               id="nav-admin-portal"
               style={navItemStyle(activeRole === 'admin', 'var(--primary-600)')}
-              onClick={() => onNavigate && onNavigate('/admin')}
+              onClick={() => onNavigate && onNavigate('/sys-panel-9f3a')}
             >
               <ShieldCheck size={16} />
               <span>Admin Portal</span>

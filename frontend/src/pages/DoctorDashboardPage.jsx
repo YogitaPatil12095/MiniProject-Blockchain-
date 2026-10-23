@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useWallet } from "../context/WalletContext";
 import { usePHR } from "../hooks/usePHR";
-import { uploadToIPFS } from "../lib/ipfs";
+import { uploadToIPFS, isIPFSDemoMode } from "../lib/ipfs";
 import { encryptMedicalFile } from "../lib/crypto";
 import { ethers } from "ethers";
 import {
@@ -202,6 +202,25 @@ export default function DoctorDashboardPage() {
       // Step 1: Encrypt file if provided and pin to IPFS
       setUploadStep(1);
       if (selectedFile) {
+        // Pre-validate file type and size before encrypting/uploading
+        const ALLOWED_EXTS = ['.pdf', '.png', '.jpg', '.jpeg', '.dcm'];
+        const ext = '.' + selectedFile.name.split('.').pop().toLowerCase();
+        if (!ALLOWED_EXTS.includes(ext)) {
+          setCreateToast({ status: 'error', message: 'Invalid file type. Allowed: PDF, PNG, JPG, JPEG, DCM.', rawError: '' });
+          setCreateLoading(false);
+          return;
+        }
+        if (selectedFile.size === 0) {
+          setCreateToast({ status: 'error', message: 'The selected file is empty.', rawError: '' });
+          setCreateLoading(false);
+          return;
+        }
+        if (selectedFile.size > 10 * 1024 * 1024) {
+          setCreateToast({ status: 'error', message: 'File exceeds 10 MB limit. Please use a smaller file.', rawError: '' });
+          setCreateLoading(false);
+          return;
+        }
+
         setCreateToast({
           status: "pending",
           message: "Step 1/3: Encrypting diagnostic document (AES-GCM 256-bit) & Pinning to IPFS...",
@@ -213,6 +232,14 @@ export default function DoctorDashboardPage() {
         });
         const ipfsRes = await uploadToIPFS(encryptedFileObj, pinataJWT);
         finalIpfsCid = ipfsRes.cid;
+
+        // Show demo mode notice if no real JWT
+        if (ipfsRes.isDemoMode || isIPFSDemoMode()) {
+          setCreateToast({
+            status: "pending",
+            message: "⚠️ Running in IPFS demo mode — file was not actually pinned to Pinata. Step 2/3: Writing to blockchain...",
+          });
+        }
       } else {
         setCreateToast({
           status: "pending",
@@ -680,6 +707,19 @@ export default function DoctorDashboardPage() {
       {/* TAB 2: Upload & Create Detailed EHR (FR-6) */}
       {activeTab === "create" && (
         <div style={{ maxWidth: 840 }}>
+          {/* Quick-start instructional card */}
+          <div className="card" style={{ padding: "20px 24px", backgroundColor: "var(--primary-50)", border: "1px solid rgba(15, 118, 110, 0.2)", marginBottom: "16px" }}>
+            <h4 style={{ fontSize: "14px", fontWeight: 700, color: "var(--primary-800)", marginBottom: "10px", margin: "0 0 10px 0" }}>
+              📋 Quick Start — Creating a Patient Record
+            </h4>
+            <ol style={{ paddingLeft: "20px", margin: 0, display: "flex", flexDirection: "column", gap: "6px" }}>
+              <li style={{ fontSize: "13px", color: "var(--text)" }}>Make sure the patient has granted you <strong>Creator</strong> or <strong>Master</strong> access from their portal.</li>
+              <li style={{ fontSize: "13px", color: "var(--text)" }}>Enter the patient's Ethereum wallet address in the field below and fill in the diagnosis details.</li>
+              <li style={{ fontSize: "13px", color: "var(--text)" }}>Optionally attach an encrypted diagnostic file (PDF, PNG, JPG, JPEG, DCM — max 10 MB).</li>
+              <li style={{ fontSize: "13px", color: "var(--text)" }}>Click <strong>Create EHR Record</strong> and confirm the MetaMask transaction.</li>
+            </ol>
+          </div>
+
           <div className="card" style={{ padding: "32px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
               <h3 style={{ fontSize: "var(--fs-h3)", fontWeight: "var(--fw-semibold)", color: "var(--text)" }}>

@@ -14,7 +14,8 @@ import {
   ExternalLink,
   Clock,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  QrCode
 } from "lucide-react";
 
 // Member A UI Components
@@ -27,6 +28,7 @@ import { AddressChip } from "../components/ui/AddressChip";
 import { RoleBadge } from "../components/ui/RoleBadge";
 import { Modal } from "../components/ui/Modal";
 import { StatusToast } from "../components/ui/StatusToast";
+import { QRModal } from "../components/QRModal";
 
 export default function PatientDashboardPage() {
   const { account } = useWallet();
@@ -57,6 +59,7 @@ export default function PatientDashboardPage() {
   const [demoHeight, setDemoHeight] = useState(170);
   const [demoWeight, setDemoWeight] = useState(65);
   const [showAadhaar, setShowAadhaar] = useState(false);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   // Grant form state
   const [grantAddress, setGrantAddress] = useState("");
@@ -305,7 +308,11 @@ export default function PatientDashboardPage() {
                 </div>
               </div>
             </div>
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <Button variant="primary" onClick={() => setIsQRModalOpen(true)} style={{ height: 38, fontSize: "13px" }}>
+                <QrCode size={15} />
+                <span>My Patient QR</span>
+              </Button>
               <Button variant="secondary" onClick={() => window.print()} style={{ height: 38, fontSize: "13px" }}>
                 <Printer size={15} />
                 <span>Print Records</span>
@@ -818,6 +825,40 @@ export default function PatientDashboardPage() {
           <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>This action requires a blockchain gas transaction.</span>
         </div>
       </Modal>
+
+      {/* Patient Profile QR Code Modal */}
+      <QRModal
+        isOpen={isQRModalOpen}
+        onClose={() => setIsQRModalOpen(false)}
+        title={`${userProfile?.fullName || "Patient"} - Medical Identity QR`}
+        data={{
+          type: "PATIENT_PROFILE",
+          app: "Intellihealth EHR",
+          address: account,
+          fullName: userProfile?.fullName || "",
+          gender: userProfile?.gender || "",
+          birthday: userProfile?.birthday || "",
+          aadhaarNumber: patientDemographicsData?.aadhaarNumber ? `XXXX-XXXX-${patientDemographicsData.aadhaarNumber.slice(-4)}` : "",
+          bloodType: patientDemographicsData?.bloodType || "O+",
+          heightCm: patientDemographicsData?.heightCm || "",
+          weightKg: patientDemographicsData?.weightKg || "",
+          emergencyPhone: userProfile?.phoneNumber || patientDemographicsData?.phoneNumber || "",
+          homeAddress: userProfile?.homeAddress || patientDemographicsData?.homeAddress || "",
+          totalRecords: records.length,
+          generatedAt: new Date().toISOString(),
+        }}
+        onScanSuccess={(scannedObj, rawText) => {
+          if (scannedObj?.address) {
+            setGrantAddress(scannedObj.address);
+            setActiveTab("grant");
+            setTxState({ status: "success", message: `QR scanned! Loaded address: ${scannedObj.address}` });
+          } else if (typeof rawText === "string" && rawText.startsWith("0x")) {
+            setGrantAddress(rawText);
+            setActiveTab("grant");
+            setTxState({ status: "success", message: `QR scanned! Loaded address: ${rawText}` });
+          }
+        }}
+      />
     </div>
   </div>
   );

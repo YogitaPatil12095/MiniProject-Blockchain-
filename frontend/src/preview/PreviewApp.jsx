@@ -34,7 +34,7 @@ export function PreviewApp() {
   const [regForm, setRegForm] = useState({ fullName: '', gender: 'Male', homeAddress: '', phone: '', birthday: '' });
   const [grantAddress, setGrantAddress] = useState('');
   const [grantRole, setGrantRole] = useState('v');
-  const [lookupAddress, setLookupAddress] = useState('0x70997970C51812dc3A010C7d01b50e0d17dc79C8');
+  const [lookupAddress, setLookupAddress] = useState('0x3394253c50947182cf98de072484609BF6683Dd5');
 
   return (
     <div className="app-container" style={{ minHeight: '100vh', backgroundColor: 'var(--bg)' }}>

@@ -68,39 +68,142 @@ export default function LoginRegisterPage({ onLoginSuccess }) {
     );
   }
 
-  // State 3: Connected but Unregistered — contact admin
+  const { registerUser } = usePHR();
+  const [selfForm, setSelfForm] = React.useState({
+    fullName: "",
+    gender: "Male",
+    homeAddress: "",
+    phone: "",
+    birthday: "1998-01-01",
+  });
+  const [registering, setRegistering] = React.useState(false);
+  const [regError, setRegError] = React.useState("");
+
+  const handleSelfRegister = async (e) => {
+    e.preventDefault();
+    if (!selfForm.fullName.trim()) {
+      setRegError("Please enter your full name.");
+      return;
+    }
+    setRegistering(true);
+    setRegError("");
+    try {
+      await registerUser(selfForm);
+    } catch (err) {
+      setRegError(err.message || "Failed to complete self-registration.");
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  // State 3: Connected but Unregistered — provide instant patient self-registration
   if (isRegistered === false) {
     return (
-      <div style={{ maxWidth: 520, margin: "60px auto" }}>
-        <div className="card" style={{ padding: "40px 32px", textAlign: "center" }}>
-          <div style={{ fontSize: "48px", marginBottom: "16px" }}>🏥</div>
-          <h2 style={{ fontSize: "var(--fs-h2)", fontWeight: "var(--fw-semibold)", color: "var(--text)", marginBottom: "12px" }}>
-            Not Yet Registered
-          </h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "var(--fs-body)", lineHeight: "1.6", marginBottom: "28px" }}>
-            You are connected but not yet registered in the Intellihealth system. Please contact your hospital administrator to register your wallet address.
-          </p>
+      <div style={{ maxWidth: 560, margin: "40px auto" }}>
+        <div className="card" style={{ padding: "36px 32px" }}>
+          <div style={{ textAlign: "center", marginBottom: "24px" }}>
+            <div style={{ fontSize: "40px", marginBottom: "12px" }}>🏥</div>
+            <h2 style={{ fontSize: "var(--fs-h2)", fontWeight: "var(--fw-semibold)", color: "var(--text)", marginBottom: "8px" }}>
+              Patient Portal Self-Registration
+            </h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--fs-body)", margin: 0, lineHeight: 1.5 }}>
+              Register your wallet address directly on the Ethereum blockchain to activate your personal health record portal.
+            </p>
+          </div>
 
-          <div style={{ backgroundColor: "var(--bg)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", padding: "16px", marginBottom: "24px" }}>
-            <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "8px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          <div style={{ backgroundColor: "var(--bg)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", padding: "14px", marginBottom: "20px" }}>
+            <p style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "6px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Your Wallet Address
             </p>
             <AddressChip address={account} isSelf={true} />
-            <div style={{ marginTop: "12px", backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "10px 14px", textAlign: "left" }}>
-              <code style={{ fontSize: "12px", color: "var(--text)", wordBreak: "break-all", fontFamily: "monospace" }}>
-                {account}
-              </code>
+          </div>
+
+          {regError && <StatusToast state="error" message={regError} />}
+
+          <form onSubmit={handleSelfRegister} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text)", display: "block", marginBottom: 6 }}>
+                Full Legal Name *
+              </label>
+              <input
+                type="text"
+                className="input"
+                required
+                placeholder="e.g. Aarav Sharma"
+                value={selfForm.fullName}
+                onChange={(e) => setSelfForm({ ...selfForm, fullName: e.target.value })}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
+              />
             </div>
-          </div>
 
-          <div style={{ backgroundColor: "rgba(59, 130, 246, 0.08)", border: "1px solid rgba(59, 130, 246, 0.25)", borderRadius: "var(--radius-md)", padding: "14px 16px", marginBottom: "24px", textAlign: "left" }}>
-            <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
-              ℹ️ <strong style={{ color: "var(--text)" }}>Registration is done only by the hospital admin on-chain.</strong> Share your wallet address with your admin. Once registered, refresh this page to access your dashboard.
-            </p>
-          </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text)", display: "block", marginBottom: 6 }}>
+                  Gender
+                </label>
+                <select
+                  value={selfForm.gender}
+                  onChange={(e) => setSelfForm({ ...selfForm, gender: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text)", display: "block", marginBottom: 6 }}>
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={selfForm.birthday}
+                  onChange={(e) => setSelfForm({ ...selfForm, birthday: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
+                />
+              </div>
+            </div>
 
-          <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-            You cannot self-register. Only the authorized hospital admin can register Doctors and Patients on the blockchain.
+            <div>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text)", display: "block", marginBottom: 6 }}>
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                placeholder="+91 9876543210"
+                value={selfForm.phone}
+                onChange={(e) => setSelfForm({ ...selfForm, phone: e.target.value })}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--text)", display: "block", marginBottom: 6 }}>
+                Home Address
+              </label>
+              <input
+                type="text"
+                placeholder="City, State"
+                value={selfForm.homeAddress}
+                onChange={(e) => setSelfForm({ ...selfForm, homeAddress: e.target.value })}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
+              />
+            </div>
+
+            <Button
+              variant="primary"
+              type="submit"
+              isLoading={registering}
+              loadingText="Creating On-Chain Profile..."
+              style={{ width: "100%", height: 46, marginTop: 8 }}
+            >
+              Register as Patient on Blockchain
+            </Button>
+          </form>
+
+          <p style={{ marginTop: "16px", fontSize: "12px", color: "var(--text-muted)", textAlign: "center", lineHeight: 1.5 }}>
+            Note: Doctors are verified & registered exclusively by Hospital Administrators for compliance.
           </p>
         </div>
       </div>

@@ -88,10 +88,10 @@ npm run dev
 
 2. **Register Doctor:**
    - [ ] Tab: "Register Doctor"
-   - [ ] Paste Account #1 address: `0x70997970C51812dc3A010C7d01b50e0d17dc79C8`
+   - [ ] Paste Doctor address: `0xF36A1a191f2343FfDAd7095A539c668748FD1eCa`
    - [ ] Fill form:
      - Doctor ID: `DOC-1001`
-     - Full Name: `Dr. Sarah Johnson`
+     - Full Name: `Dr. Rajesh Verma`
      - Specialty: `Cardiology`
      - Qualification: `MBBS, MD Cardiology`
      - Phone: `+91 9876543210`
@@ -103,16 +103,16 @@ npm run dev
 
 3. **Register Patient:**
    - [ ] Tab: "Register Patient"
-   - [ ] Paste Account #2 address: `0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC`
+   - [ ] Paste Patient address: `0x3394253c50947182cf98de072484609BF6683Dd5`
    - [ ] Fill form:
-     - Aadhaar: `123456789012`
-     - Full Name: `Rahul Sharma`
+     - Aadhaar: `998877665544`
+     - Full Name: `Aarav Sharma`
      - Gender: `Male`
-     - Home Address: `123 MG Road, Pune`
-     - Phone: `+91 9988776655`
-     - Birthday: `1990-05-15`
-     - Blood Type: `O+`
-     - Height: `175 cm`
+     - Home Address: `42 Marine Drive, Mumbai`
+     - Phone: `+91 9123456780`
+     - Birthday: `1995-08-20`
+     - Blood Type: `B+`
+     - Height: `176 cm`
      - Weight: `70 kg`
    - [ ] Click "Register Patient"
    - [ ] MetaMask confirms

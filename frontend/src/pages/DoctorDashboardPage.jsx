@@ -18,7 +18,8 @@ import {
   Edit,
   ExternalLink,
   Lock,
-  Plus
+  Plus,
+  QrCode
 } from "lucide-react";
 
 // Member A UI Components
@@ -31,6 +32,7 @@ import { GasBadge } from "../components/ui/GasBadge";
 import { AddressChip } from "../components/ui/AddressChip";
 import { StatusToast } from "../components/ui/StatusToast";
 import { Modal } from "../components/ui/Modal";
+import { QRModal } from "../components/QRModal";
 
 export default function DoctorDashboardPage() {
   const { account } = useWallet();
@@ -47,6 +49,7 @@ export default function DoctorDashboardPage() {
   } = usePHR();
 
   const [activeTab, setActiveTab] = useState("view"); // "view" | "create" | "appointments" | "profile"
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   // View records state (FR-5 & FR-7)
   const [searchAddress, setSearchAddress] = useState("");
@@ -494,6 +497,12 @@ export default function DoctorDashboardPage() {
                 </div>
               </div>
             </div>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <Button variant="primary" onClick={() => setIsQRModalOpen(true)} style={{ height: 38, fontSize: "13px" }}>
+                <QrCode size={15} />
+                <span>Doctor QR & Scanner</span>
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -509,14 +518,27 @@ export default function DoctorDashboardPage() {
             </p>
 
             <form onSubmit={handleSearchPatientRecords}>
-              <Input
-                label="Patient Ethereum Address"
-                placeholder="0x..."
-                value={searchAddress}
-                onChange={(e) => setSearchAddress(e.target.value)}
-                isAddress={true}
-                required
-              />
+              <div style={{ display: "flex", gap: "10px", alignItems: "flex-end" }}>
+                <div style={{ flex: 1 }}>
+                  <Input
+                    label="Patient Ethereum Address"
+                    placeholder="0x..."
+                    value={searchAddress}
+                    onChange={(e) => setSearchAddress(e.target.value)}
+                    isAddress={true}
+                    required
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setIsQRModalOpen(true)}
+                  style={{ height: 42, marginBottom: 2 }}
+                >
+                  <QrCode size={16} />
+                  <span style={{ marginLeft: 6 }}>Scan QR</span>
+                </Button>
+              </div>
 
               <div style={{ marginTop: "16px" }}>
                 <Button
@@ -541,10 +563,21 @@ export default function DoctorDashboardPage() {
 
           {patientRecords !== null && (
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h3 style={{ fontSize: "var(--fs-h3)", fontWeight: "var(--fw-semibold)" }}>
-                  Clinical Records for {searchAddress.slice(0, 8)}…{searchAddress.slice(-6)} ({patientRecords.length})
-                </h3>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+                <div>
+                  <h3 style={{ fontSize: "var(--fs-h3)", fontWeight: "var(--fw-semibold)" }}>
+                    Clinical Records for {searchAddress.slice(0, 8)}…{searchAddress.slice(-6)}
+                  </h3>
+                  <div style={{ display: "flex", gap: "12px", alignItems: "center", marginTop: "4px", fontSize: "13px", color: "var(--text-muted)" }}>
+                    <span>Total Consultations / Visits: <strong style={{ color: "var(--text)" }}>{patientRecords.length}</strong></span>
+                    {patientRecords.length > 0 && (
+                      <>
+                        <span>•</span>
+                        <span>Latest Visit: <strong style={{ color: "var(--text)" }}>{new Date(patientRecords[0].createdAt * 1000).toLocaleDateString()}</strong></span>
+                      </>
+                    )}
+                  </div>
+                </div>
                 <GasBadge />
               </div>
 
@@ -1123,6 +1156,33 @@ export default function DoctorDashboardPage() {
           <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>This action requires a MetaMask transaction.</span>
         </div>
       </Modal>
+
+      {/* Doctor Profile QR & Patient QR Scanner */}
+      <QRModal
+        isOpen={isQRModalOpen}
+        onClose={() => setIsQRModalOpen(false)}
+        title={`${doctorProfileData?.fullName || userProfile?.fullName || "Doctor"} - Clinical QR`}
+        data={{
+          type: "DOCTOR_PROFILE",
+          app: "Intellihealth EHR",
+          address: account,
+          doctorId: doctorProfileData?.doctorId || "DOC-1001",
+          fullName: doctorProfileData?.fullName || userProfile?.fullName || "Doctor",
+          specialty: doctorProfileData?.specialty || "Cardiology",
+          qualification: doctorProfileData?.qualification || "MBBS, MD",
+          phone: doctorProfileData?.phoneNumber || "",
+          hospitalLocation: doctorProfileData?.location || "Apollo Hospital, Mumbai",
+          generatedAt: new Date().toISOString(),
+        }}
+        onScanSuccess={(scannedObj, rawText) => {
+          const targetAddr = scannedObj?.address || (typeof rawText === "string" && rawText.startsWith("0x") ? rawText : "");
+          if (targetAddr) {
+            setSearchAddress(targetAddr);
+            setCreatePatientAddress(targetAddr);
+            setViewToast({ status: "success", message: `Patient QR scanned! Address loaded: ${targetAddr}` });
+          }
+        }}
+      />
     </div>
   </div>
   );

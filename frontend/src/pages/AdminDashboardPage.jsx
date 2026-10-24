@@ -29,27 +29,27 @@ export default function AdminDashboardPage() {
 
   // Form States
   const [docForm, setDocForm] = useState({
-    doctorAddress: "",
+    doctorAddress: "0xF36A1a191f2343FfDAd7095A539c668748FD1eCa",
     doctorId: `DOC-${Math.floor(1000 + Math.random() * 9000)}`,
-    fullName: "",
+    fullName: "Dr. Rajesh Verma",
     specialty: MEDICAL_SPECIALTIES[0],
-    qualification: "MBBS, MD",
-    phoneNumber: "",
-    location: "Mumbai, Maharashtra",
+    qualification: "MBBS, MD (Cardiology)",
+    phoneNumber: "+91 9876543210",
+    location: "Apollo Hospital, Mumbai",
     photoIpfsCid: "",
   });
 
   const [patientForm, setPatientForm] = useState({
-    patientAddress: "",
-    aadhaarNumber: "",
-    fullName: "",
+    patientAddress: "0x3394253c50947182cf98de072484609BF6683Dd5",
+    aadhaarNumber: "998877665544",
+    fullName: "Aarav Sharma",
     gender: "Male",
-    homeAddress: "",
-    phoneNumber: "",
-    birthday: "1995-05-15",
-    bloodType: "O+",
-    heightCm: 172,
-    weightKg: 68,
+    homeAddress: "42 Marine Drive, Mumbai",
+    phoneNumber: "+91 9123456780",
+    birthday: "1995-08-20",
+    bloodType: "B+",
+    heightCm: 176,
+    weightKg: 72,
     photoIpfsCid: "",
   });
 

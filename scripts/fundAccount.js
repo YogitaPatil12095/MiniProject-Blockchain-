@@ -4,9 +4,8 @@ async function main() {
   const [deployer] = await ethers.getSigners();
 
   const recipients = [
-    { name: "Yogita (Account 1)", address: "0xF36A1a191f2343FfDAd7095A539c668748FD1eCa" },
-    { name: "Aayush",             address: "0xF4554382460C70ec570460391962D9A707E081f4" },
-    { name: "Nick",               address: "0xAB28953390D67c862fFD1dF613F6CDfA8BB6D348" },
+    { name: "Doctor",  address: "0xF36A1a191f2343FfDAd7095A539c668748FD1eCa" },
+    { name: "Patient", address: "0x3394253c50947182cf98de072484609BF6683Dd5" },
   ];
 
   for (const r of recipients) {

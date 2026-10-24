@@ -28,3 +28,10 @@ typechain-types/
 # OS
 .DS_Store
 Thumbs.db
+
+# IEEE Template (copyrighted, do not commit)
+docs/IEEE-conference-template.pdf
+
+# Scratch / old figure generation scripts
+scripts/generate_figures.py
+scripts/generate_fig5.py

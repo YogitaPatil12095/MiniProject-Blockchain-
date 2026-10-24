@@ -6,11 +6,14 @@
 [![Ethers](https://img.shields.io/badge/Ethers-v6-purple)](https://docs.ethers.org/v6/)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite)](https://vitejs.dev/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)](https://www.mongodb.com/atlas)
+[![Vercel Frontend](https://img.shields.io/badge/Vercel-Live_App-black?logo=vercel)](https://mini-project-blockchain.vercel.app/)
+[![Render Backend](https://img.shields.io/badge/Render-Live_API-46E3B7?logo=render)](https://miniproject-blockchain.onrender.com/api/health)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-A secured decentralized Electronic Health Record (EHR) web application based on the IEEE research paper:
-> **"Intellihealth – A Secured Decentralized Electronic Health Record System using Blockchain"**  
-> *S. Parshionikar, A. Verulkar, & A. Katkar, 2024 IEEE International Conference on Blockchain and Distributed Systems Security (ICBDS 2024), Pune, India (DOI: [10.1109/ICBDS61829.2024.10837083](https://doi.org/10.1109/ICBDS61829.2024.10837083))*
+### 🚀 Live Deployments
+* **Frontend Web Application (Vercel):** [https://mini-project-blockchain.vercel.app/](https://mini-project-blockchain.vercel.app/)
+* **Backend REST API (Render):** [https://miniproject-blockchain.onrender.com/api/health](https://miniproject-blockchain.onrender.com/api/health)
+* **Technical Whitepaper / Research Paper (IEEE Format):** [`docs/RESEARCH_PAPER_IEEE_FORMAT.md`](docs/RESEARCH_PAPER_IEEE_FORMAT.md)
 
 ---
 
